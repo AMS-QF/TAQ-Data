@@ -16,21 +16,24 @@ class client_connection:
 
     """
 
-    def __init__(self, router_ip, username, password):
+    def __init__(self, router_ip, username, password, user_username, user_password):
 
         # want to encrypt these in some way
-        self.router_ip = router_ip
-        self.router_username = username
-        self.router_password = password
+        self.router_ip =   router_ip
+        self.router_username = "query_user"  # username
+        self.router_password =  password
 
-        self.path = "path/to/serversidescripts"
+        self.user_username = user_username
+        self.user_password = user_password
 
-        ssh = paramiko.SSHClient()
+        self.path = "TAQNYSE-Clickhouse"
+
+        self.ssh = paramiko.SSHClient()
         logging.basicConfig(level=logging.INFO)
 
     def run_command(self, command):
-        ssh.load_system_host_keys()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh.load_system_host_keys()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         total_attempts = 3
         for attempt in range(total_attempts):
@@ -38,19 +41,23 @@ class client_connection:
                 string = str(f"Attempt to connect:{attempt}")
                 logging.info(string)
                 # Connect to router using username/password authentication.
-                ssh.connect(
+                self.ssh.connect(
                     self.router_ip,
                     username=self.router_username,
                     password=self.router_password,
                     look_for_keys=False,
                 )
                 # Run command.
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+                ssh_stdin, ssh_stdout, ssh_stderr = self.ssh.exec_command(
+                    "conda activate query_user",  get_pty=True
+                )
+
+                ssh_stdin, ssh_stdout, ssh_stderr = self.ssh.exec_command(command,  get_pty=True)
 
                 output = ssh_stdout.readlines()
 
                 # Close connection.
-                ssh.close()
+                self.ssh.close()
 
                 return output
 
@@ -70,7 +77,7 @@ class client_connection:
         return
 
     def client_get_trades(self, exchange, symbol, start, end):
-        command = f"python {self.path}/trades/server_helpers.py {exchange} {symbol} {start} {end}"
+        command = f"python3 {self.path}/trades/server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
         data = self.run_command(command)
 
         return data
@@ -80,10 +87,17 @@ class client_connection:
         pass
 
     def client_get_quotes(self, exchange, symbol, start, end):
-        command = f"python {self.path}/quotes/server_helpers.py {exchange} {symbol} {start} {end}"
+        command = f"python3 {self.path}/quotes/server_helpers.py  {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
+        print(command)
         data = self.run_command(command)
-
+        print(data)
         return data
 
     def client_get_quote_features(self, exchange, symbol, start, end, bbo=False):
         pass
+
+
+conn = client_connection(
+    "router", "server_user", "server_pass", "Jason_Remote", "Password"
+)
+conn.client_get_quotes("K", "AAPL", "2020-01-04", "2020-01-11")
