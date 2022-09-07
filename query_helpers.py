@@ -5,7 +5,7 @@ import sys
 import sqlalchemy as db
 from sqlalchemy.sql import func
 import logging
-import paramiko
+from fabric import Connection
 
 
 class client_connection:
