@@ -11,7 +11,7 @@ Directories:
         
 
 **data**
-    - When executing queries data will be written to this file 
+    - When executing queries data will be written to this directories  
     
 
 
