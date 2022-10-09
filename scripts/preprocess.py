@@ -1,11 +1,16 @@
 """Class to preprocess data, drop out o data trades/quotes and return cleaned data """
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def clean_trades(trades):
+
+    """
+    Need to order by trades participant ts
+
+    """
+
     trades.index = pd.to_datetime(trades["Time"].values)
-    
 
     trades["date"] = trades.index.date
 
@@ -28,8 +33,35 @@ def clean_trades(trades):
 
 
 def clean_quotes(quotes, drop_after_hours=True):
-    quotes.index = pd.to_datetime(quotes["Time"].values)
-    
+
+    # parse date and pt
+    quotes["date"] = quotes["Time"].apply(lambda x: str(x[:11]))
+    quotes.index = quotes["date"] + quotes["Participant_Timestamp"].astype(str)
+    quotes = quotes.drop(columns=["Participant_Timestamp", "date"])
+    quotes = quotes.rename(
+        columns={quotes.columns[0]: "Participant_Timestamp", "Time": "SIP_Timestamp"}
+    )
+
+    # convert pt to valid ts
+    quotes.index = quotes.index.str[:-3]
+    time = pd.Series(
+        pd.to_datetime(quotes.index.str[11:].str.zfill(12), format="%H%M%S%f")
+    )
+    date = pd.Series(pd.to_datetime(quotes.index.str[:11]))
+    quotes.index = date.apply(lambda x: x) + time.apply(
+        lambda x: timedelta(
+            hours=x.hour, minutes=x.minute, seconds=x.second, microseconds=x.microsecond
+        )
+    )
+
+    quotes = quotes.sort_index()
+
+    quotes = quotes.dropna(axis=1, how="all")
+
+    quotes = quotes[
+        quotes["Offer_Price"] > quotes["Bid_Price"]
+    ]  # removed quotes with invalid spreads
+    quotes = quotes[quotes["Bid_Price"] > 0]  # bid and offer price >0
 
     # drop after hours for quotes, preserve if want to prepend lob
     if drop_after_hours:
@@ -48,7 +80,7 @@ def clean_quotes(quotes, drop_after_hours=True):
                 subset.index > datetime.strptime(f"{day} 09:30:00", "%Y-%m-%d %H:%M:%S")
             ]
         new_quotes = pd.concat(list(grouped_quotes.values())).sort_index()
-        
+
         return new_quotes
     else:
         return quotes
