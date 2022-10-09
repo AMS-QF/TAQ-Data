@@ -10,10 +10,34 @@ def clean_trades(trades):
 
     """
 
-    trades.index = pd.to_datetime(trades["Time"].values)
+        # parse date and pt
+    trades["date"] = trades["Time"].apply(lambda x: str(x[:11]))
+    trades.index = trades["date"] + trades["Participant_Timestamp"].astype(str)
+    trades = trades.drop(columns=["Participant_Timestamp"])
+    trades = trades.rename(
+        columns={trades.columns[0]: "Participant_Timestamp", "Time": "SIP_Timestamp"}
+    )
+    
+    
+    trades.index = trades.index.str[:-3]
+    time = pd.Series(
+        pd.to_datetime(trades.index.str[11:].str.zfill(12), format="%H%M%S%f")
+    )
+    date = pd.Series(pd.to_datetime(trades.index.str[:11]))
+    trades.index = date.apply(lambda x: x) + time.apply(
+        lambda x: timedelta(
+            hours=x.hour, minutes=x.minute, seconds=x.second, microseconds=x.microsecond
+        )
+    )
 
-    trades["date"] = trades.index.date
+    trades = trades.sort_index()
 
+    trades = trades.dropna(axis=1, how="all")
+
+    trades=trades[trades['Trade_Volume']>0]
+    
+    trades=trades[trades['Trade_Price']>0]
+    
     grouped_trades = trades.groupby("date").groups
 
     # drop trade data outside of market hours
