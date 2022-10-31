@@ -1,14 +1,8 @@
-"""Class to preprocess data, drop out o data trades/quotes and return cleaned data """
 import pandas as pd
 from datetime import datetime, timedelta
 
 
 def clean_trades(trades):
-
-    """
-    Need to order by trades participant ts
-
-    """
 
         # parse date and pt
     trades["date"] = trades["Time"].apply(lambda x: str(x[:11]))
@@ -57,7 +51,7 @@ def clean_trades(trades):
 
 
 def clean_quotes(quotes, drop_after_hours=True):
-
+    
     # parse date and pt
     quotes["date"] = quotes["Time"].apply(lambda x: str(x[:11]))
     quotes.index = quotes["date"] + quotes["Participant_Timestamp"].astype(str)
@@ -108,3 +102,23 @@ def clean_quotes(quotes, drop_after_hours=True):
         return new_quotes
     else:
         return quotes
+
+def chunk_clean(path, quotes=True):
+    counter=1
+    
+    for df in pd.read_csv(f"{path}.csv", iterator=True,chunksize=100000):
+        
+        if quotes:   
+            cleaned_data=clean_quotes(df)
+        else:
+            cleaned_data=clean_trades(df)
+        
+        if counter==1:
+            pd.DataFrame(columns=cleaned_data.columns).to_csv(f"{path}_cleaned.csv", index=False)
+            
+        print(f"{100000*counter} rows cleaned")
+     
+        cleaned_data.to_csv(f"{path}_cleaned.csv",mode='a',header=False)
+        counter+=1
+                          
+    return
