@@ -1,3 +1,0 @@
-fabric
-pandas
-logging numpy

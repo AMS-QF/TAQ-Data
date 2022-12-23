@@ -1,8 +1,9 @@
-import pandas as pd
 import gc
 import logging
-from fabric import Connection
 from datetime import timedelta
+
+import pandas as pd
+from fabric import Connection
 
 
 class client_connection:
@@ -43,10 +44,9 @@ class client_connection:
 
             command = f" python3 {self.path}/trades/server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
             print(f"Trade Query for {exchange} {symbol} {start} {end}")
-            data = self.run_command(command)
+            self.run_command(command)
 
-            df = self.conn.get(
-                f"{self.path}/trades/query_results.csv", local=directory)
+            df = self.conn.get(f"{self.path}/trades/query_results.csv", local=directory)
 
         return df
 
@@ -59,8 +59,7 @@ class client_connection:
             print(f"Quote Query for {exchange} {symbol} {start} {end}")
             self.run_command(command)
 
-            df = self.conn.get(
-                f"{self.path}/quotes/query_results.csv", local=directory)
+            df = self.conn.get(f"{self.path}/quotes/query_results.csv", local=directory)
 
         return df
 
@@ -72,16 +71,15 @@ class client_connection:
 
         while current_dt < end:
             current_dt_str = str(current_dt.date())
-            next_dt_str = str((current_dt+timedelta(days=1)).date())
-            self.client_get_quotes(
-                exchange, symbol, current_dt_str, next_dt_str)
+            next_dt_str = str((current_dt + timedelta(days=1)).date())
+            self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str)
 
-            day_quotes = pd.read_csv(f'data/{symbol}_quotes.csv')
-            day_quotes.to_csv(f'data/{symbol}_quotes_{current_dt.date()}.csv')
+            day_quotes = pd.read_csv(f"data/{symbol}_quotes.csv")
+            day_quotes.to_csv(f"data/{symbol}_quotes_{current_dt.date()}.csv")
             del day_quotes
             gc.collect()
             print(f"Saved Quotes for {symbol} on {current_dt}")
-            current_dt = current_dt+timedelta(days=1)
+            current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
         return
@@ -94,20 +92,18 @@ class client_connection:
 
         while current_dt < end:
             current_dt_str = str(current_dt.date())
-            next_dt_str = str((current_dt+timedelta(days=1)).date())
-            self.client_get_trades(
-                exchange, symbol, current_dt_str, next_dt_str)
+            next_dt_str = str((current_dt + timedelta(days=1)).date())
+            self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str)
 
-            day_trades = pd.read_csv(f'data/{symbol}_trades.csv')
+            day_trades = pd.read_csv(f"data/{symbol}_trades.csv")
             if len(day_trades) > 0:
-                day_trades.to_csv(
-                    f'data/{symbol}_trades_{current_dt.date()}.csv')
+                day_trades.to_csv(f"data/{symbol}_trades_{current_dt.date()}.csv")
                 print(f"Saved trades for {symbol} on {current_dt}")
 
             del day_trades
             gc.collect()
 
-            current_dt = current_dt+timedelta(days=1)
+            current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
         return
