@@ -28,8 +28,8 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
 
 ### Directories:
 **scripts**
-    - query_helpers: scripts to ssh into the server and clickhouse database executing queries from database and returning df to data directory
-    - preprocess: scripts to preprocess data from db to user-friendly format
-    - load_data: scripts to load data from data directory into user-specific directory
+- query_helpers: scripts to ssh into the server and clickhouse database executing queries from database and returning df to data directory
+- preprocess: scripts to preprocess data from db to user-friendly format
+- load_data: scripts to load data from data directory into user-specific directory
         
 **Do not republish, distribute or utilize the sample data found in this repo for any purposes other than academic research**
