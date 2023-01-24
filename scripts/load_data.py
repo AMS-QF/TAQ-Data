@@ -24,8 +24,8 @@ def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: st
     """Get trades from the database"""
 
     result, path = conn.client_get_trades(exchange, symbol, start, end, data_dir)
-
-    trades = pd.read_csv(path)
+    print(path)
+    trades = pd.read_csv("../" + path)
 
     trades = clean_trades(trades)
     trades.to_csv(path)
