@@ -21,6 +21,7 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
 
 - Setup Pre-commit Hooks for formatting
 
+    `conda install isort autoflake black pre-commit`
     `pre-commit install`
 
 
