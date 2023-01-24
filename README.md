@@ -7,13 +7,13 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
 
 - Create an .env file in the root directory of the repo with the following variables:
 
-" 
+"""
     host="ppolak5.ams.stonybrook.edu."
     server_user= 
     server_password= 
     db_user= 
     db_pass=
-"
+"""
 
 - Create a conda env using the environment.yml file
 
