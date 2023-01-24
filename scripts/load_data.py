@@ -25,7 +25,7 @@ def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
     result, path = conn.client_get_trades(exchange, symbol, start, end, data_dir)
     print(path)
-    trades = pd.read_csv("../" + path)
+    trades = pd.read_csv(path)
 
     trades = clean_trades(trades)
     trades.to_csv(path)
@@ -47,7 +47,7 @@ def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
 
 def get_sample_trades(
-    conn: Connection, exchange="N", symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir="data"
+    conn: Connection, exchange="N", symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir=None
 ):
     """Get a sample of trades from the database"""
 
@@ -57,7 +57,7 @@ def get_sample_trades(
 
 
 def get_sample_quotes(
-    conn: Connection, exchange="N", symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir="data"
+    conn: Connection, exchange="N", symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir=None
 ):
     """Get a sample of quotes from the database"""
 
@@ -68,6 +68,7 @@ def get_sample_quotes(
 
 # python3 load_data.py
 if __name__ == "__main__":
+
     conn = connect_to_db()
 
     trades, path = get_sample_trades(conn)
