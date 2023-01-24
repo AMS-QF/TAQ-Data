@@ -1,8 +1,5 @@
 .ipynb_checkpoints/
-data/.ipynb_checkpoints/
-data/AAPL_quotes_2020.csv
-data/AAPL_quotes_2020_cleaned.csv
-data/cleaned_trades.csv
+data/
 scripts/.ipynb_checkpoints/
 scripts/__pycache__/
-data/AAPL_trades.csv
+.env
