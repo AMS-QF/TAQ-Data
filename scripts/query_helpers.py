@@ -16,7 +16,6 @@ class client_connection:
 
     def __init__(self, host, username, password, user_username, user_password):
 
-        # want to encrypt these in some way
         self.host = host
         self.router_username = username
         self.router_password = password
@@ -26,6 +25,7 @@ class client_connection:
         self.user_username = user_username
         self.user_password = user_password
 
+        # setup remote connection to server
         self.conn = Connection(
             host=self.host,
             user=self.router_username,
@@ -37,8 +37,14 @@ class client_connection:
         result = self.conn.run(command)
         return result
 
-    def client_get_trades(self, exchange, symbol, start, end):
-        directory = f"data/{symbol}_trades.csv"
+    def client_get_trades(self, exchange, symbol, start, end, dir_name=None):
+        """Get trades from the database via remote execution of server_helpers.py"""
+
+        if dir_name is None:
+            dir_name = f"data/{symbol}_trades.csv"
+        else:
+            dir_name = f"data/{dir_name}/{symbol}_trades.csv"
+
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
@@ -46,12 +52,18 @@ class client_connection:
             print(f"Trade Query for {exchange} {symbol} {start} {end}")
             self.run_command(command)
 
-            df = self.conn.get(f"{self.path}/trades/query_results.csv", local=directory)
+            df = self.conn.get(f"{self.path}/trades/query_results.csv", local=dir_name)
 
-        return df
+        return df, dir_name
 
-    def client_get_quotes(self, exchange, symbol, start, end):
-        directory = f"data/{symbol}_quotes.csv"
+    def client_get_quotes(self, exchange, symbol, start, end, dir_name=None):
+        """Get quotes from the database via remote execution of server_helpers.py"""
+
+        if dir_name is None:
+            dir_name = f"data/{symbol}_quotes.csv"
+        else:
+            dir_name = f"data/{dir_name}/{symbol}_quotes.csv"
+
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
@@ -59,11 +71,12 @@ class client_connection:
             print(f"Quote Query for {exchange} {symbol} {start} {end}")
             self.run_command(command)
 
-            df = self.conn.get(f"{self.path}/quotes/query_results.csv", local=directory)
+            df = self.conn.get(f"{self.path}/quotes/query_results.csv", local=dir_name)
 
-        return df
+        return df, dir_name
 
     def get_quotes_range(self, exchange, symbol, start, end):
+        """Get quotes for a range of dates by calling client_get_quotes for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
 
@@ -85,6 +98,7 @@ class client_connection:
         return
 
     def get_trades_range(self, exchange, symbol, start, end):
+        """Get trades for a range of dates by calling client_get_trades for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
 

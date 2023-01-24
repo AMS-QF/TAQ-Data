@@ -6,3 +6,4 @@ data/cleaned_trades.csv
 scripts/.ipynb_checkpoints/
 scripts/__pycache__/
 data/AAPL_trades.csv
+.env
