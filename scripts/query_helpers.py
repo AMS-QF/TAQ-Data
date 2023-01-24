@@ -41,9 +41,9 @@ class client_connection:
         """Get trades from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
-            dir_name = f"data/{symbol}_trades.csv"
+            dir_name = f"../data/{symbol}_trades.csv"
         else:
-            dir_name = f"data/{dir_name}/{symbol}_trades.csv"
+            dir_name = f"../data/{dir_name}/{symbol}_trades.csv"
 
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
@@ -60,9 +60,9 @@ class client_connection:
         """Get quotes from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
-            dir_name = f"data/{symbol}_quotes.csv"
+            dir_name = f"../data/{symbol}_quotes.csv"
         else:
-            dir_name = f"data/{dir_name}/{symbol}_quotes.csv"
+            dir_name = f"../data/{dir_name}/{symbol}_quotes.csv"
 
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):

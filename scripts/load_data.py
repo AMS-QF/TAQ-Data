@@ -1,9 +1,8 @@
-import pandas as pd
 import configobj
-
-from scripts.query_helpers import client_connection
-from scripts.preprocess import clean_quotes, clean_trades
+import pandas as pd
 from fabric import Connection
+from preprocess import clean_quotes, clean_trades
+from query_helpers import client_connection
 
 
 def connect_to_db():
@@ -29,20 +28,22 @@ def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: st
     trades = pd.read_csv(path)
 
     trades = clean_trades(trades)
+    trades.to_csv(path)
 
-    return trades
+    return trades, path
 
 
 def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: str, data_dir: str = None):
     """Get quotes from the database"""
 
-    results, path = conn.client_get_quotes(exchange, symbol, start, end)
+    results, path = conn.client_get_quotes(exchange, symbol, start, end, data_dir)
 
     quotes = pd.read_csv(path)
 
     quotes = clean_quotes(quotes)
+    quotes.to_csv(path)
 
-    return quotes
+    return quotes, path
 
 
 def get_sample_trades(
@@ -50,7 +51,9 @@ def get_sample_trades(
 ):
     """Get a sample of trades from the database"""
 
-    get_trades(conn, exchange, symbol, start_date, end_date, data_dir)
+    trades, path = get_trades(conn, exchange, symbol, start_date, end_date, data_dir)
+
+    return trades, path
 
 
 def get_sample_quotes(
@@ -58,4 +61,19 @@ def get_sample_quotes(
 ):
     """Get a sample of quotes from the database"""
 
-    get_quotes(conn, symbol, start_date, end_date)
+    quotes, path = get_quotes(conn, exchange, symbol, start_date, end_date)
+
+    return quotes, path
+
+
+# python3 load_data.py
+if __name__ == "__main__":
+    conn = connect_to_db()
+
+    trades, path = get_sample_trades(conn)
+
+    print(f"Trades saved to {path}")
+
+    quotes, path = get_sample_quotes(conn)
+
+    print(f"Quotes saved to {path}")
