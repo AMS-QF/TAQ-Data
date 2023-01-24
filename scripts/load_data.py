@@ -38,7 +38,7 @@ def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
     results, path = conn.client_get_quotes(exchange, symbol, start, end, data_dir)
 
-    quotes = pd.read_csv(path)
+    quotes = pd.read_csv(path, low_memory=False)
 
     quotes = clean_quotes(quotes)
     quotes.to_csv(path)
