@@ -4,7 +4,8 @@ import pandas as pd
 
 
 def clean_trades(trades):
-
+    if "Time" not in trades.columns:
+        trades = trades.rename(columns={trades.columns[0]: "Time"})
     # parse date and pt
     trades["date"] = trades["Time"].apply(lambda x: str(x[:11]))
     trades.index = trades["date"] + trades["Participant_Timestamp"].astype(str)
@@ -41,7 +42,8 @@ def clean_trades(trades):
 
 
 def clean_quotes(quotes, drop_after_hours=True):
-
+    if "Time" not in quotes.columns:
+        quotes = quotes.rename(columns={quotes.columns[0]: "Time"})
     # parse date and pt
     quotes["date"] = quotes["Time"].apply(lambda x: str(x[:11]))
     quotes.index = quotes["date"] + quotes["Participant_Timestamp"].astype(str)
