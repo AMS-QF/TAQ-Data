@@ -48,7 +48,7 @@ class client_connection:
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
-            command = f" python3 {self.path}/trades/server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
+            command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
             print(f"Trade Query for {exchange} {symbol} {start} {end}")
             self.run_command(command)
 
@@ -67,7 +67,7 @@ class client_connection:
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
-            command = f" python3 {self.path}/quotes/server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
+            command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
             print(f"Quote Query for {exchange} {symbol} {start} {end}")
             self.run_command(command)
 
