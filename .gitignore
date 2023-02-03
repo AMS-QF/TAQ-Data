@@ -2,4 +2,5 @@
 data/
 scripts/.ipynb_checkpoints/
 scripts/__pycache__/
+scripts/feature_gen/__pycache__/
 .env
