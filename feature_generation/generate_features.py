@@ -1,15 +1,18 @@
 import argparse
 import os
-from typing import List
+from typing import List, Union
 
 import pandas as pd
-from feature_gen.generators import parent_generator
-from feature_gen.list_features import list_features
+
+from feature_generation.generators import parent_generator
+from feature_generation.list_features import list_features
 
 PATH = "data/"
 
 
-def generate_features(trade_features: List[str] = None, quote_features: List[str] = None, input_file=None):
+def generate_features(
+    trade_features: List[str] = None, quote_features: List[str] = None, input_file=List[Union[str, None]]
+):
 
     # If no features are specified, generate all features (raw and generated)
     if trade_features is None and quote_features is None:
@@ -61,7 +64,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate Features")
     parser.add_argument("--trade_features", nargs="+", help="Features to Generate")
     parser.add_argument("--quote_features", nargs="+", help="Features to Generate")
-    parser.add_argument("--input_file", default=None, help="Directory of Raw Data")
+    parser.add_argument("--input_file", default=[None], help="Directory of Raw Data")
 
     args = parser.parse_args()
 

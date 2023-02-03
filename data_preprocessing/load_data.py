@@ -1,14 +1,17 @@
+import argparse
+
 import configobj
 import pandas as pd
 from fabric import Connection
-from preprocess import clean_quotes, clean_trades
-from query_helpers import client_connection
+
+from data_preprocessing.preprocess import clean_quotes, clean_trades
+from data_preprocessing.query_helpers import client_connection
 
 
 def connect_to_db():
     """Connect to the database"""
 
-    config = configobj.ConfigObj("../.env")
+    config = configobj.ConfigObj(".env")
     host = config["host"]
     server_user = config["server_user"]
     server_password = config["server_password"]
@@ -66,15 +69,25 @@ def get_sample_quotes(
     return quotes, path
 
 
-# python3 load_data.py
+# python data_preprocessing/get_data.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-31 --data_dir AAPL
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--exchange", type=str, default="N")
+    parser.add_argument("--symbol", type=str, default="AAPL")
+    parser.add_argument("--start_date", type=str, default="2021-01-01")
+    parser.add_argument("--end_date", type=str, default="2021-01-31")
+    parser.add_argument("--data_dir", type=str, default=None)
+
+    args = parser.parse_args()
 
     conn = connect_to_db()
 
-    trades, path = get_sample_trades(conn)
+    trades, path = get_trades(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
     print(f"Trades saved to {path}")
 
-    quotes, path = get_sample_quotes(conn)
+    quotes, path = get_quotes(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
     print(f"Quotes saved to {path}")

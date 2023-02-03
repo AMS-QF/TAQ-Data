@@ -1,7 +1,5 @@
 .ipynb_checkpoints/
 data/
-scripts/.ipynb_checkpoints/
-scripts/__pycache__/
-scripts/feature_gen/__pycache__/
-scripts/feature_gen/__pycache__/
+data_preprocessing/__pycache__
 .env
+feature_generation/__pycache__/
