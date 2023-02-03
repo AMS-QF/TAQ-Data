@@ -24,11 +24,21 @@ def generate_features(
     assert len(all_files) > 0, "No files in raw_data"
 
     # case where file is specified
+    file_found = False
     if input_file is not None:
-        if input_file not in all_files:
-            raise ValueError(f"{input_file} not in raw_data")
-        else:
-            all_files = [input_file]
+        for file in input_file:
+            if file not in all_files:
+                print(f"File {file} not in raw_data")
+                continue
+
+            file_found = True
+
+        # if no file is found, return
+        if not file_found:
+            return
+
+        # if file is found, set all_files to input_file
+        all_files = input_file
 
     # for each file, generate features
     for file in all_files:
