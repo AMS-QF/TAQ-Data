@@ -8,10 +8,12 @@ from data_preprocessing.preprocess import chunk_clean
 def clean_data(input_file: str):
 
     if "TRADES" in input_file:
+        print("Cleaning trades file{}".format(input_file))
         df = pd.read_csv(input_file, low_memory=False)
         df = chunk_clean(df, False)
 
     elif "QUOTES" in input_file:
+        print("Cleaning quotes file{}".format(input_file))
         df = pd.read_csv(input_file, low_memory=False)
         df = chunk_clean(df, True)
 

@@ -41,6 +41,8 @@ def generate_features(
 
             features_to_generate = [feature for feature in trade_features if feature not in df.columns]
 
+            print("Generating Features: {}".format(features_to_generate))
+
             df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
 
             df.to_csv(f"{PATH}/features/{file}_features.csv", index=False)
@@ -50,6 +52,8 @@ def generate_features(
             """Generate Quote Features"""
 
             features_to_generate = [feature for feature in quote_features if feature not in df.columns]
+
+            print("Generating Features: {}".format(features_to_generate))
 
             df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
 

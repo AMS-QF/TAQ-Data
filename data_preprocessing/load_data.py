@@ -26,6 +26,8 @@ def connect_to_db():
 def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: str, data_dir: str = None):
     """Get trades from the database"""
 
+    print(f"Getting trades for {exchange} {symbol} {start} {end}")
+
     result, path = conn.client_get_trades(exchange, symbol, start, end, data_dir)
 
     trades = pd.read_csv(path)
@@ -40,6 +42,8 @@ def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: st
     """Get quotes from the database"""
 
     results, path = conn.client_get_quotes(exchange, symbol, start, end, data_dir)
+
+    print(f"Getting quotes for {exchange} {symbol} {start} {end}")
 
     quotes = pd.read_csv(path, low_memory=False)
 
