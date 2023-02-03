@@ -14,11 +14,11 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
     result, quote_path = load_data.get_quotes(conn, exchange, symbol, start_date, end_date)
 
     # clean data
-    clean_data.clean_data(trade_path, False)
-    clean_data.clean_data(quote_path, True)
+    trade_clean_path = clean_data.clean_data(trade_path)
+    quote_clean_path = clean_data.clean_data(quote_path)
 
     # generate features
-    generate_features.generate_features(input_file=[trade_path, quote_path])
+    generate_features.generate_features(input_file=[trade_clean_path, quote_clean_path])
 
 
 # python run_jobs.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-03

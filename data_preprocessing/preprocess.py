@@ -84,6 +84,7 @@ def clean_quotes(quotes, drop_after_hours=True):
         return quotes
 
 
+# grossman transcnction costs
 def chunk_clean(path, quotes=True):
     counter = 1
 
@@ -100,6 +101,7 @@ def chunk_clean(path, quotes=True):
         print(f"{100000*counter} rows cleaned")
 
         cleaned_data.to_csv(f"{path}_cleaned.csv", mode="a", header=False)
+        cleaned_path = f"{path}_cleaned.csv"
         counter += 1
 
-    return
+    return cleaned_path
