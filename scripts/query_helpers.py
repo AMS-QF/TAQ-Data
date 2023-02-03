@@ -87,8 +87,8 @@ class client_connection:
             next_dt_str = str((current_dt + timedelta(days=1)).date())
             self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str)
 
-            day_quotes = pd.read_csv(f"data/{symbol}_quotes.csv")
-            day_quotes.to_csv(f"data/{symbol}_quotes_{current_dt.date()}.csv")
+            day_quotes = pd.read_csv(f"../data/{symbol}_quotes.csv")
+            day_quotes.to_csv(f"../data/{symbol}_quotes_{current_dt.date()}.csv")
             del day_quotes
             gc.collect()
             print(f"Saved Quotes for {symbol} on {current_dt}")
@@ -109,9 +109,9 @@ class client_connection:
             next_dt_str = str((current_dt + timedelta(days=1)).date())
             self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str)
 
-            day_trades = pd.read_csv(f"data/{symbol}_trades.csv")
+            day_trades = pd.read_csv(f"../data/{symbol}_trades.csv")
             if len(day_trades) > 0:
-                day_trades.to_csv(f"data/{symbol}_trades_{current_dt.date()}.csv")
+                day_trades.to_csv(f"../data/{symbol}_trades_{current_dt.date()}.csv")
                 print(f"Saved trades for {symbol} on {current_dt}")
 
             del day_trades
