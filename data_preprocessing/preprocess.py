@@ -88,6 +88,10 @@ def clean_quotes(quotes, drop_after_hours=True):
 def chunk_clean(path, quotes=True):
     counter = 1
 
+    # remove .csv if present
+    if ".csv" in path:
+        path = path.replace(".csv", "")
+
     for df in pd.read_csv(f"{path}.csv", iterator=True, chunksize=100000):
 
         if quotes:

@@ -45,6 +45,10 @@ def generate_features(
         # read in raw data file
         df = pd.read_csv(f"{PATH}/raw_data/{file}", low_memory=False)
 
+        # remove .csv from file name
+        if ".csv" in file:
+            file = file.replace(".csv", "")
+
         # generate trade features via parent_generator
         if trade_features:
             """Generate Trade Features"""
@@ -66,8 +70,6 @@ def generate_features(
             print("Generating Features: {}".format(features_to_generate))
 
             df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
-
-            print(df)
 
             df.to_csv(f"{PATH}/features/{file}_features.csv", index=False)
 
