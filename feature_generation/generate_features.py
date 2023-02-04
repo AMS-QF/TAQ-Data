@@ -25,8 +25,8 @@ def generate_features(
             file = file.replace(".csv", "")
 
         # replace raw_data with features
-        file.replace("data/raw_data/", "data/features/")
-        file.replace("cleaned", "")
+        file = file.replace("data/raw_data/", "data/features/")
+        file = file.replace("cleaned", "")
 
         # generate trade features via parent_generator
         if trade_features and "trades" in file:
