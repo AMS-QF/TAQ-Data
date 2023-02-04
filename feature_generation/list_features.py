@@ -76,8 +76,8 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
             "Microprice_BBO": "Microprice of the National Best Bid and National Best Offer",
             "Effective_Spread_BBO": "Effective Spread of the National Best Bid and National Best Offer",
             "Realized_Spread_BBO": " Spread of the National Best Bid and National Best Offer accounting for impact cost",
-            "Imbalance_Weighted_Effective_Spread_BBO": "Imbalance Weighted Effective Spread of the National Best Bid and National Best Offer",
             "Imbalance_BBO": "Ratio between the National Best Bid and National Best Offer",
+            "Imbalance_Weighted_Effective_Spread_BBO": "Imbalance Weighted Effective Spread of the National Best Bid and National Best Offer",
         }
 
         quote_features.update(generated_quote_features)

@@ -102,10 +102,10 @@ def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame
     feature_mappping = {
         "Effective_Spread_BBO": generate_bbo_effective_spread,
         "Realized_Spread_BBO": generate_bbo_realized_spread,
+        "Imbalance_BBO": generate_imbalance_bbo,
         "Imbalance_Weighted_Effective_Spread_BBO": generate_imbalance_weighted_effective_spread_bbo,
         "Midprice_BBO": generate_midprice_bbo,
         "Microprice_BBO": generate_microprice_bbo,
-        "Imbalance_BBO": generate_imbalance_bbo,
         "Trade_Side": generate_trade_side,
         "Prevailing_Best_Bid_Price": generate_prevailing_best_bid_price,
         "Prevailing_Best_Offer_Price": generate_prevailing_best_offer_price,
