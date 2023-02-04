@@ -52,9 +52,35 @@ def generate_trade_side(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def generate_prevailing_nbbo(df: pd.DataFrame) -> pd.DataFrame:
+def generate_prevailing_best_bid_price(df: pd.DataFrame) -> pd.DataFrame:
+    """Generate Prevailing Best Bid Price"""
 
-    # Look into Prevailing NBBO
+    # Look into Prevailing Best Bid Price
+
+    return df
+
+
+def generate_prevailing_best_offer_price(df: pd.DataFrame) -> pd.DataFrame:
+    """Generate Prevailing Best Offer Price"""
+
+    # Look into Prevailing Best Offer Price
+
+    return df
+
+
+def generate_prevailing_best_bid_size(df: pd.DataFrame) -> pd.DataFrame:
+    """Generate Prevailing Best Bid Size"""
+
+    # Look into Prevailing Best Bid Size
+
+    return df
+
+
+def generate_prevailing_best_offer_size(df: pd.DataFrame) -> pd.DataFrame:
+    """Generate Prevailing Best Offer Size"""
+
+    # Look into Prevailing Best Offer Size
+
     return df
 
 
@@ -64,17 +90,27 @@ def generate_price_impact(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def generate_imbalance_weighted_effective_spread_bbo(df: pd.DataFrame) -> pd.DataFrame:
+
+    # Look into Imbalance Weighted Effective Spread
+    return df
+
+
 def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame:
     """Wrapper function to call the correct feature generator function"""
     # This is a mapping of the feature name to the function that generates it
     feature_mappping = {
         "Effective_Spread_BBO": generate_bbo_effective_spread,
         "Realized_Spread_BBO": generate_bbo_realized_spread,
+        "Imbalance_Weighted_Effective_Spread_BBO": generate_imbalance_weighted_effective_spread_bbo,
         "Midprice_BBO": generate_midprice_bbo,
         "Microprice_BBO": generate_microprice_bbo,
         "Imbalance_BBO": generate_imbalance_bbo,
         "Trade_Side": generate_trade_side,
-        "Prevailing_NBBO": generate_prevailing_nbbo,
+        "Prevailing_Best_Bid_Price": generate_prevailing_best_bid_price,
+        "Prevailing_Best_Offer_Price": generate_prevailing_best_offer_price,
+        "Prevailing_Best_Bid_Size": generate_prevailing_best_bid_size,
+        "Prevailing_Best_Offer_Size": generate_prevailing_best_offer_size,
         "Price_Impact": generate_price_impact,
     }
 
