@@ -57,6 +57,12 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
     if trades:
         """Generate Trade Features"""
 
+        generated_trade_features = {
+            "Trade_Side": "Side of the Trade",
+        }
+
+        trade_features.update(generated_trade_features)
+
     if quotes:
         """Generate Quote Features"""
 

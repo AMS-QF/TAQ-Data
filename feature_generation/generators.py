@@ -67,6 +67,13 @@ def generate_imbalance_bbo(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def generate_trade_side(df: pd.DataFrame) -> pd.DataFrame:
+    """Classify trade side"""
+
+    # Look into Signing Algorithms
+    return df
+
+
 def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame:
     """Wrapper function to call the correct feature generator function"""
     # This is a mapping of the feature name to the function that generates it
@@ -79,6 +86,7 @@ def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame
         "Microprice_BBO": generate_microprice_bbo,
         "Imbalance": generate_imbalance,
         "Imbalance_BBO": generate_imbalance_bbo,
+        "Trade_Side": generate_trade_side,
     }
 
     return feature_mappping[feature_to_generate](df)
