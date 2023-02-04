@@ -1,5 +1,6 @@
 import gc
 import logging
+import os
 from datetime import timedelta
 
 import pandas as pd
@@ -90,6 +91,11 @@ class client_connection:
             df, path = self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str, dir_name)
             path_list.append(path)
 
+            # create directory if it doesn't exist
+            isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")
+            if not isExist:
+                os.makedirs(f"data/raw_data/{current_dt.date()}")
+
             day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv")
             day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
             del day_quotes
@@ -114,6 +120,12 @@ class client_connection:
             df, path = self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str, dir_name)
 
             path_list.append(path)
+
+            # create directory if it doesn't exist
+            isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")
+            if not isExist:
+                os.makedirs(f"data/raw_data/{current_dt.date()}")
+
             day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv")
             if len(day_trades) > 0:
                 day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
