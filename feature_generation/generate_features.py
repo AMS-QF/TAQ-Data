@@ -26,7 +26,9 @@ def generate_features(
 
         # replace raw_data with features
         file = file.replace("data/raw_data/", "data/features/")
-        file = file.replace("cleaned", "")
+
+        if "cleaned" in file:
+            file = file.replace("cleaned", "")
 
         # generate trade features via parent_generator
         if trade_features and "trades" in file:
@@ -68,7 +70,7 @@ if __name__ == "__main__":
 
     # generate all features if no features are specified
     if args.trade_features is None and args.quote_features is None:
-        generate_features(input_file=args.input_file)
+        generate_features(input_file=[args.input_file])
 
     else:
-        generate_features(args.trade_features, args.quote_features, input_file=args.input_file)
+        generate_features(args.trade_features, args.quote_features, input_file=[args.input_file])

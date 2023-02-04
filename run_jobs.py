@@ -21,8 +21,6 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
     all_clean_paths = [trade_clean_path, quote_clean_path]
     all_clean_paths = set([item for sublist in all_clean_paths for item in sublist])
 
-    print(all_clean_paths)
-
     # generate features
     generate_features.generate_features(input_file=all_clean_paths)
 

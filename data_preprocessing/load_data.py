@@ -65,7 +65,7 @@ def get_sample_quotes(
 ):
     """Get a sample of quotes from the database"""
 
-    quotes, path = get_quotes(conn, exchange, symbol, start_date, end_date)
+    quotes, path = get_quotes(conn, exchange, symbol, start_date, end_date, data_dir)
 
     return quotes, path
 

@@ -14,7 +14,7 @@ If no input directory is specified, features will be generated for all files in 
 
 Example:
 
-```python scripts/generate_features.py  --input_file AAPL_quotes_2022-01-01_cleaned.csv ```
+```python scripts/generate_features.py  --input_file data/raw_data/AAPL_quotes.csv ```
 
 
 

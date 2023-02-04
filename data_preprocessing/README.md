@@ -25,4 +25,4 @@ To clean the data locally, run the following command:
 
 Example
 
-```python data_preprocessing/clean_data.py --input_file AAPL_quotes_2022-01-01.csv```
+```python data_preprocessing/clean_data.py --input_file data/raw_data/AAPL_quotes.csv```
