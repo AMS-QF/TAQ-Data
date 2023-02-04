@@ -11,8 +11,8 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
     conn = load_data.connect_to_db()
 
     # load data
-    result, trade_path = load_data.get_trades(conn, exchange, symbol, start_date, end_date)
-    result, quote_path = load_data.get_quotes(conn, exchange, symbol, start_date, end_date)
+    trade_path = load_data.get_trades(conn, exchange, symbol, start_date, end_date)
+    quote_path = load_data.get_quotes(conn, exchange, symbol, start_date, end_date)
 
     # clean data
 
@@ -21,7 +21,7 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
 
     all_clean_paths = [trade_clean_path, quote_clean_path]
     all_clean_paths = set([item for sublist in all_clean_paths for item in sublist])
-
+    print(all_clean_paths)
     # reconstruct full book events
 
     ## TO-DO: Reconstruct book events before feature generation

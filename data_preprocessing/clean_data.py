@@ -1,24 +1,30 @@
 import argparse
+from typing import List
 
 from data_preprocessing.preprocess import chunk_clean
 
 
-def clean_data(input_file: str):
+def clean_data(input_file: List[str]):
 
-    if "trades" in input_file:
-        print("Cleaning trades file: {}".format(input_file))
+    clean_path_list = []
+    for input_file in input_file:
 
-        clean_path_list = chunk_clean(input_file, False)
+        if "trades" in input_file:
+            print("Cleaning trades file: {}".format(input_file))
 
-    elif "quotes" in input_file:
-        print("Cleaning quotes file: {}".format(input_file))
+            clean_path = chunk_clean(input_file, False)
 
-        clean_path_list = chunk_clean(input_file, True)
+        elif "quotes" in input_file:
+            print("Cleaning quotes file: {}".format(input_file))
 
-    else:
-        print("Input file is not a trades or quotes file")
+            clean_path = chunk_clean(input_file, True)
 
-        return None
+        else:
+            print("Input file is not a trades or quotes file")
+
+            return None
+
+        clean_path_list.append(clean_path)
 
     return clean_path_list
 
@@ -32,4 +38,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    clean_data(args.input_file)
+    clean_data([args.input_file])

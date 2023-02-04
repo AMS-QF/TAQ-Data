@@ -77,17 +77,18 @@ class client_connection:
 
         return df, dir_name
 
-    def get_quotes_range(self, exchange, symbol, start, end):
+    def get_quotes_range(self, exchange, symbol, start, end, dir_name=None):
         """Get quotes for a range of dates by calling client_get_quotes for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
 
         current_dt = start
-
+        path_list = []
         while current_dt < end:
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str)
+            df, path = self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str, dir_name)
+            path_list.append(path)
 
             day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv")
             day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
@@ -97,20 +98,22 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
-        return
+        return path_list
 
-    def get_trades_range(self, exchange, symbol, start, end):
+    def get_trades_range(self, exchange, symbol, start, end, dir_name=None):
         """Get trades for a range of dates by calling client_get_trades for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
 
         current_dt = start
 
+        path_list = []
         while current_dt < end:
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str)
+            df, path = self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str, dir_name)
 
+            path_list.append(path)
             day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv")
             if len(day_trades) > 0:
                 day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
@@ -122,4 +125,4 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
-        return
+        return path_list

@@ -3,3 +3,4 @@ data/
 data_preprocessing/__pycache__
 .env
 feature_generation/__pycache__/
+pipelines/__pycache__/
