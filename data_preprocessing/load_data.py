@@ -1,14 +1,16 @@
+import argparse
+
 import configobj
 import pandas as pd
 from fabric import Connection
-from preprocess import clean_quotes, clean_trades
-from query_helpers import client_connection
+
+from data_preprocessing.query_helpers import client_connection
 
 
 def connect_to_db():
     """Connect to the database"""
 
-    config = configobj.ConfigObj("../.env")
+    config = configobj.ConfigObj(".env")
     host = config["host"]
     server_user = config["server_user"]
     server_password = config["server_password"]
@@ -23,11 +25,12 @@ def connect_to_db():
 def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: str, data_dir: str = None):
     """Get trades from the database"""
 
+    print(f"Getting trades for {exchange} {symbol} {start} {end}")
+
     result, path = conn.client_get_trades(exchange, symbol, start, end, data_dir)
 
-    trades = pd.read_csv(path)
+    trades = pd.read_csv(path, low_memory=False)
 
-    trades = clean_trades(trades)
     trades.to_csv(path)
 
     return trades, path
@@ -38,9 +41,10 @@ def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
     results, path = conn.client_get_quotes(exchange, symbol, start, end, data_dir)
 
+    print(f"Getting quotes for {exchange} {symbol} {start} {end}")
+
     quotes = pd.read_csv(path, low_memory=False)
 
-    quotes = clean_quotes(quotes)
     quotes.to_csv(path)
 
     return quotes, path
@@ -61,20 +65,30 @@ def get_sample_quotes(
 ):
     """Get a sample of quotes from the database"""
 
-    quotes, path = get_quotes(conn, exchange, symbol, start_date, end_date)
+    quotes, path = get_quotes(conn, exchange, symbol, start_date, end_date, data_dir)
 
     return quotes, path
 
 
-# python3 load_data.py
+# python data_preprocessing/get_data.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-31 --data_dir AAPL
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--exchange", type=str, default="N")
+    parser.add_argument("--symbol", type=str, default="AAPL")
+    parser.add_argument("--start_date", type=str, default="2021-01-01")
+    parser.add_argument("--end_date", type=str, default="2021-01-31")
+    parser.add_argument("--data_dir", type=str, default=None)
+
+    args = parser.parse_args()
 
     conn = connect_to_db()
 
-    trades, path = get_sample_trades(conn)
+    trades, path_list = get_trades(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
-    print(f"Trades saved to {path}")
+    print(f"Trades saved to {path_list}")
 
-    quotes, path = get_sample_quotes(conn)
+    quotes, path_list = get_quotes(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
-    print(f"Quotes saved to {path}")
+    print(f"Quotes saved to {path_list}")

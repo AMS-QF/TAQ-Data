@@ -84,10 +84,17 @@ def clean_quotes(quotes, drop_after_hours=True):
         return quotes
 
 
+# grossman transcnction costs
 def chunk_clean(path, quotes=True):
     counter = 1
 
-    for df in pd.read_csv(f"{path}.csv", iterator=True, chunksize=100000):
+    # remove .csv if present
+    if ".csv" in path:
+        path = path.replace(".csv", "")
+
+    path_list = []
+
+    for df in pd.read_csv(f"{path}.csv", iterator=True, chunksize=100000, low_memory=False):
 
         if quotes:
             cleaned_data = clean_quotes(df)
@@ -100,6 +107,8 @@ def chunk_clean(path, quotes=True):
         print(f"{100000*counter} rows cleaned")
 
         cleaned_data.to_csv(f"{path}_cleaned.csv", mode="a", header=False)
+        cleaned_path = f"{path}_cleaned.csv"
+        path_list.append(cleaned_path)
         counter += 1
 
-    return
+    return path_list

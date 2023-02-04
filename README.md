@@ -5,6 +5,8 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
 
 - Create a directory called `data` in the root directory of the repo
 
+- Create subdirectories called `raw_data` and `features` in the data directory of the repo
+
 - Create an .env file in the root directory of the repo with the following variables:
 
 ```
@@ -24,9 +26,17 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
     `conda install isort autoflake black pre-commit`
     `pre-commit install`
 
-### Script:
-- query_helpers: scripts to ssh into the server and clickhouse database executing queries from database and returning df to data directory
-- preprocess: scripts to preprocess data from db to user-friendly format
-- load_data: scripts to load data from data directory into user-specific directory
+
+### Example Usage
+
+Here we will show how to access the TAQ-Clickhouse database remotely, clean data, and generate features from the data with one command.
+
+Command has the following format:
+
+`python run_jobs.py --exchange <exchange> --symbol <symbol> --start_date <start_date> --end_date <end_date>`
+
+Example:
+
+```python run_jobs.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-03```
         
 **Do not republish, distribute or utilize the sample data found in this repo for any purposes other than academic research**
