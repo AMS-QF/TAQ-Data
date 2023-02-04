@@ -27,27 +27,29 @@ def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
     print(f"Getting trades for {exchange} {symbol} {start} {end}")
 
-    result, path = conn.client_get_trades(exchange, symbol, start, end, data_dir)
+    result, path_list = conn.client_get_trades(exchange, symbol, start, end, data_dir)
 
-    trades = pd.read_csv(path)
+    for path in path_list:
+        trades = pd.read_csv(path, low_memory=False)
 
-    trades.to_csv(path)
+        trades.to_csv(path)
 
-    return trades, path
+    return trades, path_list
 
 
 def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: str, data_dir: str = None):
     """Get quotes from the database"""
 
-    results, path = conn.client_get_quotes(exchange, symbol, start, end, data_dir)
+    results, path_list = conn.client_get_quotes(exchange, symbol, start, end, data_dir)
 
     print(f"Getting quotes for {exchange} {symbol} {start} {end}")
 
-    quotes = pd.read_csv(path, low_memory=False)
+    for path in path_list:
+        quotes = pd.read_csv(path, low_memory=False)
 
-    quotes.to_csv(path)
+        quotes.to_csv(path)
 
-    return quotes, path
+    return quotes, path_list
 
 
 def get_sample_trades(
@@ -55,9 +57,9 @@ def get_sample_trades(
 ):
     """Get a sample of trades from the database"""
 
-    trades, path = get_trades(conn, exchange, symbol, start_date, end_date, data_dir)
+    trades, path_list = get_trades(conn, exchange, symbol, start_date, end_date, data_dir)
 
-    return trades, path
+    return trades, path_list
 
 
 def get_sample_quotes(
@@ -65,9 +67,9 @@ def get_sample_quotes(
 ):
     """Get a sample of quotes from the database"""
 
-    quotes, path = get_quotes(conn, exchange, symbol, start_date, end_date)
+    quotes, path_list = get_quotes(conn, exchange, symbol, start_date, end_date)
 
-    return quotes, path
+    return quotes, path_list
 
 
 # python data_preprocessing/get_data.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-31 --data_dir AAPL
@@ -85,10 +87,10 @@ if __name__ == "__main__":
 
     conn = connect_to_db()
 
-    trades, path = get_trades(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
+    trades, path_list = get_trades(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
-    print(f"Trades saved to {path}")
+    print(f"Trades saved to {path_list}")
 
-    quotes, path = get_quotes(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
+    quotes, path_list = get_quotes(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
-    print(f"Quotes saved to {path}")
+    print(f"Quotes saved to {path_list}")

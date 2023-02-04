@@ -1,13 +1,10 @@
 import argparse
-import os
 from typing import List, Union
 
 import pandas as pd
 
 from feature_generation.generators import parent_generator
 from feature_generation.list_features import list_features
-
-PATH = "data/"
 
 
 def generate_features(
@@ -18,32 +15,10 @@ def generate_features(
     if trade_features is None and quote_features is None:
         trade_features, quote_features = list_features(names_only=True)
 
-    # get all files in raw_data
-    all_files = os.listdir(f"{PATH}/raw_data")
-
-    assert len(all_files) > 0, "No files in raw_data"
-
-    # case where file is specified
-    file_found = False
-    if input_file is not None:
-        for file in input_file:
-            if file not in all_files:
-                print(f"File {file} not in raw_data")
-                continue
-
-            file_found = True
-
-        # if no file is found, return
-        if not file_found:
-            return
-
-        # if file is found, set all_files to input_file
-        all_files = input_file
-
     # for each file, generate features
-    for file in all_files:
+    for file in input_file:
         # read in raw data file
-        df = pd.read_csv(f"{PATH}/raw_data/{file}", low_memory=False)
+        df = pd.read_csv(f"{file}", low_memory=False)
 
         # remove .csv from file name
         if ".csv" in file:
@@ -59,7 +34,7 @@ def generate_features(
 
             df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
 
-            df.to_csv(f"{PATH}/features/{file}_features.csv", index=False)
+            df.to_csv(f"{file}_features.csv", index=False)
 
         # generate quote features via parent_generator
         if quote_features:
@@ -71,7 +46,7 @@ def generate_features(
 
             df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
 
-            df.to_csv(f"{PATH}/features/{file}_features.csv", index=False)
+            df.to_csv(f"{file}_features.csv", index=False)
 
 
 # python scripts/feature_gen/generate_features.py
