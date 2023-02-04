@@ -94,7 +94,7 @@ def chunk_clean(path, quotes=True):
 
     path_list = []
 
-    for df in pd.read_csv(f"{path}.csv", iterator=True, chunksize=100000):
+    for df in pd.read_csv(f"{path}.csv", iterator=True, chunksize=100000, low_memory=False):
 
         if quotes:
             cleaned_data = clean_quotes(df)

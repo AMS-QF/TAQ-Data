@@ -24,6 +24,10 @@ def generate_features(
         if ".csv" in file:
             file = file.replace(".csv", "")
 
+        # replace raw_data with features
+        file.replace("data/raw_data/", "data/features/")
+        file.replace("cleaned", "")
+
         # generate trade features via parent_generator
         if trade_features and "trades" in file:
             """Generate Trade Features"""
@@ -49,7 +53,7 @@ def generate_features(
             df.to_csv(f"{file}_features.csv", index=False)
 
         else:
-            print(f"File {file} is not a trades or quotes file")
+            print(f"File {file} is not a trades or quotes file or no features were specified.")
 
 
 # python scripts/feature_gen/generate_features.py
