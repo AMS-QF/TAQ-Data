@@ -4,7 +4,6 @@ import configobj
 import pandas as pd
 from fabric import Connection
 
-from data_preprocessing.preprocess import clean_quotes, clean_trades
 from data_preprocessing.query_helpers import client_connection
 
 
@@ -32,7 +31,6 @@ def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
     trades = pd.read_csv(path)
 
-    trades = clean_trades(trades)
     trades.to_csv(path)
 
     return trades, path
@@ -47,7 +45,6 @@ def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
     quotes = pd.read_csv(path, low_memory=False)
 
-    quotes = clean_quotes(quotes)
     quotes.to_csv(path)
 
     return quotes, path
