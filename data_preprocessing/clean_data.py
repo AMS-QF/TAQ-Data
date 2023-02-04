@@ -8,19 +8,19 @@ def clean_data(input_file: str):
     if "trades" in input_file:
         print("Cleaning trades file: {}".format(input_file))
 
-        clean_path = chunk_clean(input_file, False)
+        clean_path_list = chunk_clean(input_file, False)
 
     elif "quotes" in input_file:
         print("Cleaning quotes file: {}".format(input_file))
 
-        clean_path = chunk_clean(input_file, True)
+        clean_path_list = chunk_clean(input_file, True)
 
     else:
         print("Input file is not a trades or quotes file")
 
-        return
+        return None
 
-    return clean_path
+    return clean_path_list
 
 
 # python data_preprocessing/clean_data.py --input_file <input_file>

@@ -10,17 +10,18 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
     conn = load_data.connect_to_db()
 
     # load data
-    result, trade_path_list = load_data.get_trades(conn, exchange, symbol, start_date, end_date)
-    result, quote_path_list = load_data.get_quotes(conn, exchange, symbol, start_date, end_date)
+    result, trade_path = load_data.get_trades(conn, exchange, symbol, start_date, end_date)
+    result, quote_path = load_data.get_quotes(conn, exchange, symbol, start_date, end_date)
 
     # clean data
-    for trade_path in trade_path_list:
-        trade_clean_path = clean_data.clean_data(trade_path)
 
-    for quote_path in quote_path_list:
-        quote_clean_path = clean_data.clean_data(quote_path)
+    trade_clean_path = clean_data.clean_data(trade_path)
+    quote_clean_path = clean_data.clean_data(quote_path)
 
     all_clean_paths = [trade_clean_path, quote_clean_path]
+    all_clean_paths = set([item for sublist in all_clean_paths for item in sublist])
+
+    print(all_clean_paths)
 
     # generate features
     generate_features.generate_features(input_file=all_clean_paths)

@@ -25,7 +25,7 @@ def generate_features(
             file = file.replace(".csv", "")
 
         # generate trade features via parent_generator
-        if trade_features:
+        if trade_features and "trades" in file:
             """Generate Trade Features"""
 
             features_to_generate = [feature for feature in trade_features if feature not in df.columns]
@@ -37,7 +37,7 @@ def generate_features(
             df.to_csv(f"{file}_features.csv", index=False)
 
         # generate quote features via parent_generator
-        if quote_features:
+        elif quote_features and "quotes" in file:
             """Generate Quote Features"""
 
             features_to_generate = [feature for feature in quote_features if feature not in df.columns]
@@ -47,6 +47,9 @@ def generate_features(
             df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
 
             df.to_csv(f"{file}_features.csv", index=False)
+
+        else:
+            print(f"File {file} is not a trades or quotes file")
 
 
 # python scripts/feature_gen/generate_features.py
