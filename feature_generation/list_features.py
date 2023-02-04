@@ -59,6 +59,8 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
 
         generated_trade_features = {
             "Trade_Side": "Side of the Trade",
+            "Prevailing_NBBO": "National Best Bid and National Best Offer at the time of the Trade",
+            "Price_Impact": "Percentage of the Trade which excecuted outside National Best Bid and National Best Offer",
         }
 
         trade_features.update(generated_trade_features)
@@ -67,13 +69,10 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
         """Generate Quote Features"""
 
         generated_quote_features = {
-            "Midprice": "Midprice of the Quote",
             "Midprice_BBO": "Midprice of the National Best Bid and National Best Offer",
-            "Microprice": "Microprice of the Quote",
             "Microprice_BBO": "Microprice of the National Best Bid and National Best Offer",
-            "Spread": "Difference between the Best Bid and Best Offer",
-            "Spread_BBO": "Difference between the National Best Bid and National Best Offer",
-            "Imbalance": "Ratio between the Best Bid and Best Offer",
+            "Effective_Spread_BBO": "Effective Spread of the National Best Bid and National Best Offer",
+            "Realized_Spread_BBO": " Spread of the National Best Bid and National Best Offer accounting for impact cost",
             "Imbalance_BBO": "Ratio between the National Best Bid and National Best Offer",
         }
 
