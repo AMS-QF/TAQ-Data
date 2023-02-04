@@ -2,6 +2,7 @@ import argparse
 
 from data_preprocessing import clean_data, load_data
 from feature_generation import generate_features
+from pipelines import event_reconstruction
 
 
 def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
@@ -21,8 +22,13 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
     all_clean_paths = [trade_clean_path, quote_clean_path]
     all_clean_paths = set([item for sublist in all_clean_paths for item in sublist])
 
+    # reconstruct full book events
+
+    ## TO-DO: Reconstruct book events before feature generation
+    reconstructed_path = event_reconstruction.reconstruct_book_events(input_files=all_clean_paths)
+
     # generate features
-    generate_features.generate_features(input_file=all_clean_paths)
+    generate_features.generate_features(input_file=reconstructed_path)
 
 
 # python run_jobs.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-03

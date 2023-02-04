@@ -41,9 +41,9 @@ class client_connection:
         """Get trades from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
-            dir_name = f"data/raw_data/{symbol}_trades.csv"
+            dir_name = f"data/raw_data/temp/{symbol}_trades.csv"
         else:
-            dir_name = f"data/raw_data/{dir_name}/{symbol}_trades.csv"
+            dir_name = f"data/raw_data/temp/{dir_name}/{symbol}_trades.csv"
 
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
@@ -52,6 +52,7 @@ class client_connection:
             print(f"Trade Query for {exchange} {symbol} {start} {end}")
             self.run_command(command)
 
+            # get the file from the server saving to our local directory
             df = self.conn.get(f"{self.path}/trades/query_results.csv", local=dir_name)
 
         return df, dir_name
@@ -60,9 +61,9 @@ class client_connection:
         """Get quotes from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
-            dir_name = f"data/raw_data/{symbol}_quotes.csv"
+            dir_name = f"data/raw_data/temp/{symbol}_quotes.csv"
         else:
-            dir_name = f"data/raw_data/{dir_name}/{symbol}_quotes.csv"
+            dir_name = f"data/raw_data/temp/{dir_name}/{symbol}_quotes.csv"
 
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
@@ -71,6 +72,7 @@ class client_connection:
             print(f"Quote Query for {exchange} {symbol} {start} {end}")
             self.run_command(command)
 
+            # get the file from the server saving to our local directory
             df = self.conn.get(f"{self.path}/quotes/query_results.csv", local=dir_name)
 
         return df, dir_name
@@ -87,8 +89,8 @@ class client_connection:
             next_dt_str = str((current_dt + timedelta(days=1)).date())
             self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str)
 
-            day_quotes = pd.read_csv(f"data/raw_data/{symbol}_quotes.csv")
-            day_quotes.to_csv(f"data/raw_data/{symbol}_quotes_{current_dt.date()}.csv")
+            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv")
+            day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
             del day_quotes
             gc.collect()
             print(f"Saved Quotes for {symbol} on {current_dt}")
@@ -109,9 +111,9 @@ class client_connection:
             next_dt_str = str((current_dt + timedelta(days=1)).date())
             self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str)
 
-            day_trades = pd.read_csv(f"data/raw_data/{symbol}_trades.csv")
+            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv")
             if len(day_trades) > 0:
-                day_trades.to_csv(f"data/raw_data/{symbol}_trades_{current_dt.date()}.csv")
+                day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
                 print(f"Saved trades for {symbol} on {current_dt}")
 
             del day_trades
