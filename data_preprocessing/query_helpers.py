@@ -114,7 +114,6 @@ class client_connection:
             if len(day_quotes) > 0:
                 day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
                 path_list.append(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
-                print(" ")
                 print(f"Saved Quotes for {symbol} on {current_dt}")
 
             del day_quotes
@@ -122,6 +121,7 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
+        print(" ")
         return path_list
 
     def get_trades_range(self, symbol, start, end, dir_name=None):
@@ -156,7 +156,6 @@ class client_connection:
             if len(day_trades) > 0:
                 day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
                 path_list.append(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
-                print(" ")
                 print(f"Saved trades for {symbol} on {current_dt}")
 
             del day_trades
@@ -165,4 +164,5 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
+        print(" ")
         return path_list
