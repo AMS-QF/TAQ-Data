@@ -31,12 +31,16 @@ class client_connection:
         self.conn = Connection(
             host=self.host,
             user=self.router_username,
+            connect_timeout=None,
             connect_kwargs={"password": self.router_password},
         )
         logging.basicConfig(level=logging.INFO)
 
-    def run_command(self, command):
-        result = self.conn.run(command)
+    def run_command(self, command, timeout=None, keep_alive=30):
+        """Run a command on the remote server"""
+
+        command = f"{command} --keepalive={keep_alive}"
+        result = self.conn.run(command, hide=True, warn=True, timeout=timeout)
         return result
 
     def client_get_trades(self, symbol, start, end, dir_name=None):
@@ -52,7 +56,7 @@ class client_connection:
 
             command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end}"
             print(f"Trade Query for {symbol} {start} {end}")
-            self.run_command(command)
+            self.run_command(command, keep_alive=30)
 
             # get the file from the server saving to our local directory
             df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
@@ -72,7 +76,7 @@ class client_connection:
 
             command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {symbol} {start} {end}"
             print(f"Quote Query for {symbol} {start} {end}")
-            self.run_command(command)
+            self.run_command(command, keep_alive=30)
 
             # get the file from the server saving to our local directory
             df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
@@ -105,7 +109,7 @@ class client_connection:
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv", low_memory=False)
+            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv", low_memory=False, on_bad_lines="skip")
 
             if len(day_quotes) > 0:
                 day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
@@ -147,7 +151,7 @@ class client_connection:
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv", low_memory=False)
+            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv", low_memory=False, on_bad_lines="skip")
 
             if len(day_trades) > 0:
                 day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")

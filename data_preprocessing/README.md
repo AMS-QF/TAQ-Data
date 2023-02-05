@@ -19,10 +19,10 @@ Example:
 
 ### Data Cleaning
 
-To clean the data locally, run the following command:
+To clean the data locally (from this directory), run the following command:
 
-```python data_preprocessing/clean_data.py --input_file <input_file> ```
+```python clean_data.py --input_file <input_file> ```
 
 Example
 
-```python data_preprocessing/clean_data.py --input_file data/raw_data/AAPL_quotes.csv```
+```python clean_data.py --input_file ../data/raw_data/2020-01-02/F_quotes.csv```

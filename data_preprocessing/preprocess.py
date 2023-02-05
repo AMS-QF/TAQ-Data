@@ -4,22 +4,27 @@ import pandas as pd
 
 
 def clean_trades(trades):
-    if "Time" not in trades.columns:
-        trades = trades.rename(columns={trades.columns[1]: "Time"})
-    # parse date and pt
-    trades["date"] = trades["Time"].apply(lambda x: str(x[:11]))
-    trades.index = trades["date"] + trades["Participant_Timestamp"].astype(str)
-    trades = trades.drop(columns=["Participant_Timestamp"])
-    trades = trades.rename(columns={trades.columns[0]: "Participant_Timestamp", "Time": "SIP_Timestamp"})
 
-    trades.index = trades.index.str[:-3]
-    time = pd.Series(pd.to_datetime(trades.index.str[11:].str.zfill(12), format="%H%M%S%f"))
-    date = pd.Series(pd.to_datetime(trades.index.str[:11]))
-    trades.index = date.apply(lambda x: x) + time.apply(
+    """Cleans trade data by dropping columns, converting datetime to index, and dropping rows with 0 trade volume or price
+
+    Sets Index to be Effective Date + Participant Timestamp
+
+
+    """
+
+    trades = trades.drop(columns=trades.columns[0:2])
+
+    # convert datetime to index using participant timestamp
+    trades["Date"] = pd.to_datetime(trades["Date"])
+    trades["Participant_Timestamp"] = pd.to_datetime(
+        trades["Participant_Timestamp"].astype(str).str.zfill(12), format="%H%M%S%f"
+    )
+    trades.index = trades["Date"].apply(lambda x: x) + trades["Participant_Timestamp"].apply(
         lambda x: timedelta(hours=x.hour, minutes=x.minute, seconds=x.second, microseconds=x.microsecond)
     )
 
     trades = trades.sort_index()
+    trades = trades.drop(columns=["Time"])
 
     trades = trades.dropna(axis=1, how="all")
 
@@ -27,14 +32,14 @@ def clean_trades(trades):
 
     trades = trades[trades["Trade_Price"] > 0]
 
-    grouped_trades = trades.groupby("date").groups
+    grouped_trades = trades.groupby("Date").groups
 
     # drop trade data outside of market hours
 
     for day in grouped_trades.keys():
-        subset = trades[trades["date"] == day]
-        grouped_trades[day] = subset[subset.index < datetime.strptime(f"{day} 16:00:00", "%Y-%m-%d %H:%M:%S")]
-        grouped_trades[day] = subset[subset.index > datetime.strptime(f"{day} 09:30:00", "%Y-%m-%d %H:%M:%S")]
+        subset = trades[trades["Date"] == day]
+        grouped_trades[day] = subset[subset.index < datetime.strptime(f"{day.date()} 16:00:00", "%Y-%m-%d %H:%M:%S")]
+        grouped_trades[day] = subset[subset.index > datetime.strptime(f"{day.date()} 09:30:00", "%Y-%m-%d %H:%M:%S")]
 
     new_trades = pd.concat(list(grouped_trades.values())).sort_index()
 
@@ -42,23 +47,28 @@ def clean_trades(trades):
 
 
 def clean_quotes(quotes, drop_after_hours=True):
-    if "Time" not in quotes.columns:
-        quotes = quotes.rename(columns={quotes.columns[1]: "Time"})
-    # parse date and pt
-    quotes["date"] = quotes["Time"].apply(lambda x: str(x[:11]))
-    quotes.index = quotes["date"] + quotes["Participant_Timestamp"].astype(str)
-    quotes = quotes.drop(columns=["Participant_Timestamp", "date"])
-    quotes = quotes.rename(columns={quotes.columns[0]: "Participant_Timestamp", "Time": "SIP_Timestamp"})
 
-    # convert pt to valid ts
-    quotes.index = quotes.index.str[:-3]
-    time = pd.Series(pd.to_datetime(quotes.index.str[11:].str.zfill(12), format="%H%M%S%f"))
-    date = pd.Series(pd.to_datetime(quotes.index.str[:11]))
-    quotes.index = date.apply(lambda x: x) + time.apply(
+    """Cleans Quotes by removing quotes with invalid spreads, quotes with bid or offer price of 0, and quotes outside of market hours
+
+    Sets Index to Effective Date + Participant Timestamp
+    """
+
+    quotes = quotes.drop(columns=quotes.columns[0:2])
+
+    # parse date and time
+    quotes["Effective_Date"] = pd.to_datetime(quotes["Effective_Date"])
+    quotes["Participant_Timestamp"] = pd.to_datetime(
+        quotes["Participant_Timestamp"].astype(str).str.zfill(12), format="%H%M%S%f"
+    )
+
+    # convert datetime to index
+    quotes.index = quotes["Effective_Date"].apply(lambda x: x) + quotes["Participant_Timestamp"].apply(
         lambda x: timedelta(hours=x.hour, minutes=x.minute, seconds=x.second, microseconds=x.microsecond)
     )
 
     quotes = quotes.sort_index()
+
+    quotes = quotes.drop(columns=["Time"])
 
     quotes = quotes.dropna(axis=1, how="all")
 
@@ -67,14 +77,14 @@ def clean_quotes(quotes, drop_after_hours=True):
 
     # drop after hours for quotes, preserve if want to prepend lob
     if drop_after_hours:
-        quotes["date"] = quotes.index.date
+        quotes["Effective_Date"] = quotes.index.date
 
-        grouped_quotes = quotes.groupby("date").groups
+        grouped_quotes = quotes.groupby("Effective_Date").groups
 
         # drop trade data outside of market hours
 
         for day in grouped_quotes.keys():
-            subset = quotes[quotes["date"] == day]
+            subset = quotes[quotes["Effective_Date"] == day]
             grouped_quotes[day] = subset[subset.index < datetime.strptime(f"{day} 16:00:00", "%Y-%m-%d %H:%M:%S")]
             grouped_quotes[day] = subset[subset.index > datetime.strptime(f"{day} 09:30:00", "%Y-%m-%d %H:%M:%S")]
         new_quotes = pd.concat(list(grouped_quotes.values())).sort_index()
