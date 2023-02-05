@@ -52,35 +52,35 @@ def generate_trade_side(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def generate_prevailing_best_bid_price(df: pd.DataFrame) -> pd.DataFrame:
+def generate_prevailing_nbbo(df: pd.DataFrame) -> pd.DataFrame:
     """Generate Prevailing Best Bid Price"""
 
-    # Look into Prevailing Best Bid Price
+    df = df.sort_index()
+
+    # create a copy of the dataframe
+    merged_df = df.copy()
+
+    # fill in the missing values
+    merged_df = merged_df.ffill()
+    merged_df = merged_df.dropna()
+
+    column_names = [
+        "Prevailing_Best_Bid_Price",
+        "Prevailing_Best_Bid_Size",
+        "Prevailing_Best_Offer_Price",
+        "Prevailing_Best_Offer_Size",
+    ]
+
+    # create a new dataframe with the required columns
+    df[column_names] = merged_df.iloc[["Best_Bid_Price", "Best_Bid_Size", "Best_Offer_Price", "Best_Offer_Size"]]
 
     return df
 
 
-def generate_prevailing_best_offer_price(df: pd.DataFrame) -> pd.DataFrame:
-    """Generate Prevailing Best Offer Price"""
+def generate_mox_identifier(df: pd.DataFrame) -> pd.DataFrame:
+    """Generate MOX Identifier"""
 
-    # Look into Prevailing Best Offer Price
-
-    return df
-
-
-def generate_prevailing_best_bid_size(df: pd.DataFrame) -> pd.DataFrame:
-    """Generate Prevailing Best Bid Size"""
-
-    # Look into Prevailing Best Bid Size
-
-    return df
-
-
-def generate_prevailing_best_offer_size(df: pd.DataFrame) -> pd.DataFrame:
-    """Generate Prevailing Best Offer Size"""
-
-    # Look into Prevailing Best Offer Size
-
+    # Look into MOX Identifier
     return df
 
 
@@ -107,10 +107,8 @@ def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame
         "Midprice_BBO": generate_midprice_bbo,
         "Microprice_BBO": generate_microprice_bbo,
         "Trade_Side": generate_trade_side,
-        "Prevailing_Best_Bid_Price": generate_prevailing_best_bid_price,
-        "Prevailing_Best_Offer_Price": generate_prevailing_best_offer_price,
-        "Prevailing_Best_Bid_Size": generate_prevailing_best_bid_size,
-        "Prevailing_Best_Offer_Size": generate_prevailing_best_offer_size,
+        "Prevailing_NBBO": generate_prevailing_nbbo,
+        "MOX_Identifier": generate_mox_identifier,
         "Price_Impact": generate_price_impact,
     }
 
