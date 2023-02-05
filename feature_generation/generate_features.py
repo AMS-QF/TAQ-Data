@@ -32,7 +32,8 @@ def generate_features(
             file = file.replace("cleaned", "")
 
         # get directory name
-        dir_name = file.split("/")[:-2]
+        dir_name = file.split("/")[:-1]
+        dir_name = "/".join(dir_name)
 
         print(dir_name)
 
