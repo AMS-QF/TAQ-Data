@@ -1,4 +1,5 @@
 import argparse
+import os
 from typing import List, Union
 
 import pandas as pd
@@ -29,6 +30,15 @@ def generate_features(
 
         if "cleaned" in file:
             file = file.replace("cleaned", "")
+
+        # get directory name
+        dir_name = file.split("/")[:-2]
+
+        print(dir_name)
+
+        is_exist = os.path.exists(dir_name)
+        if not is_exist:
+            os.makedirs(dir_name)
 
         # generate trade features via parent_generator
         if trade_features:

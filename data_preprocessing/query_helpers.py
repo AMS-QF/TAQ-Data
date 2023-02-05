@@ -55,7 +55,7 @@ class client_connection:
             self.run_command(command)
 
             # get the file from the server saving to our local directory
-            df = self.conn.get(f"{self.path}/trades/query_results.csv", local=dir_name)
+            df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
 
         return df, dir_name
 
@@ -75,7 +75,7 @@ class client_connection:
             self.run_command(command)
 
             # get the file from the server saving to our local directory
-            df = self.conn.get(f"{self.path}/quotes/query_results.csv", local=dir_name)
+            df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
 
         return df, dir_name
 

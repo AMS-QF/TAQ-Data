@@ -40,7 +40,7 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exchange", type=str, default="N")
+    parser.add_argument("--exchange", type=str, default="'N'")
     parser.add_argument("--symbol", type=str, default="AAPL")
     parser.add_argument("--start_date", type=str, default="2020-01-01")
     parser.add_argument("--end_date", type=str, default="2020-01-03")
