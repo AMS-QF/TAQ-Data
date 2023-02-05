@@ -16,8 +16,8 @@ def reconstruct_book_events(input_files: Union[List[Dict], None] = None):
 
         base_path = day["trades"].split("trades")[0]
 
-        trades = pd.read_csv(day["trades"], index_col=0)
-        quotes = pd.read_csv(day["quotes"], index_col=0)
+        trades = pd.read_csv(day["trades"], index_col=0, low_memory=False)
+        quotes = pd.read_csv(day["quotes"], index_col=0, low_memory=False)
 
         trades["participant_timestamp"] = trades.index
         quotes["participant_timestamp"] = quotes.index

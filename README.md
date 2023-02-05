@@ -37,6 +37,6 @@ Command has the following format:
 
 Example:
 
-```python run_jobs.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-03```
+```python run_jobs.py --exchange "N" --symbol "AAPL" --start_date "2020-01-01" --end_date "2020-01-03"```
         
 **Do not republish, distribute or utilize the sample data found in this repo for any purposes other than academic research**
