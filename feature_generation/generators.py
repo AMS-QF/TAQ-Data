@@ -72,7 +72,7 @@ def generate_prevailing_nbbo(df: pd.DataFrame) -> pd.DataFrame:
     ]
 
     # create a new dataframe with the required columns
-    df[column_names] = merged_df.iloc[["Best_Bid_Price", "Best_Bid_Size", "Best_Offer_Price", "Best_Offer_Size"]]
+    df[column_names] = merged_df[["Best_Bid_Price", "Best_Bid_Size", "Best_Offer_Price", "Best_Offer_Size"]]
 
     return df
 
