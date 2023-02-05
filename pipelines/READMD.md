@@ -1,3 +1,6 @@
  ### Pipeline for TAQ Features
 
- Given a set of TAQ Features, we want to perform feature standardization and feature selection. This directory contains the pipeline for this task.
+ Given cleaned TAQ data; we will want to construct pipelines for a variet of tasks. Some of which include
+
+ - [] Event Reconstruction
+ - [] Feature Normalization and Selection

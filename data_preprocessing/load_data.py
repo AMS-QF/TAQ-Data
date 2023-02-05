@@ -1,7 +1,6 @@
 import argparse
 
 import configobj
-import pandas as pd
 from fabric import Connection
 
 from data_preprocessing.query_helpers import client_connection
@@ -27,27 +26,17 @@ def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: st
 
     print(f"Getting trades for {exchange} {symbol} {start} {end}")
 
-    result, path = conn.client_get_trades(exchange, symbol, start, end, data_dir)
+    path_list = conn.get_trades_range(exchange, symbol, start, end, data_dir)
 
-    trades = pd.read_csv(path, low_memory=False)
-
-    trades.to_csv(path)
-
-    return trades, path
+    return path_list
 
 
 def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: str, data_dir: str = None):
     """Get quotes from the database"""
 
-    results, path = conn.client_get_quotes(exchange, symbol, start, end, data_dir)
+    path_list = conn.get_quotes_range(exchange, symbol, start, end, data_dir)
 
-    print(f"Getting quotes for {exchange} {symbol} {start} {end}")
-
-    quotes = pd.read_csv(path, low_memory=False)
-
-    quotes.to_csv(path)
-
-    return quotes, path
+    return path_list
 
 
 def get_sample_trades(
@@ -85,10 +74,10 @@ if __name__ == "__main__":
 
     conn = connect_to_db()
 
-    trades, path_list = get_trades(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
+    path_list = get_trades(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
     print(f"Trades saved to {path_list}")
 
-    quotes, path_list = get_quotes(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
+    path_list = get_quotes(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
 
     print(f"Quotes saved to {path_list}")

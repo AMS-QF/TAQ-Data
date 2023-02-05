@@ -92,7 +92,9 @@ def chunk_clean(path, quotes=True):
     if ".csv" in path:
         path = path.replace(".csv", "")
 
-    path_list = []
+    # remove temp/ dir if present
+    if "temp/" in path:
+        path = path.replace("temp/", "")
 
     for df in pd.read_csv(f"{path}.csv", iterator=True, chunksize=100000, low_memory=False):
 
@@ -104,11 +106,10 @@ def chunk_clean(path, quotes=True):
         if counter == 1:
             pd.DataFrame(columns=cleaned_data.columns).to_csv(f"{path}_cleaned.csv", index=False)
 
-        print(f"{100000*counter} rows cleaned")
-
+        # append to csvs
         cleaned_data.to_csv(f"{path}_cleaned.csv", mode="a", header=False)
         cleaned_path = f"{path}_cleaned.csv"
-        path_list.append(cleaned_path)
+
         counter += 1
 
-    return path_list
+    return cleaned_path
