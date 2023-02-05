@@ -106,8 +106,6 @@ def chunk_clean(path, quotes=True):
         if counter == 1:
             pd.DataFrame(columns=cleaned_data.columns).to_csv(f"{path}_cleaned.csv", index=False)
 
-        print(f"{100000*counter} rows cleaned")
-
         # append to csvs
         cleaned_data.to_csv(f"{path}_cleaned.csv", mode="a", header=False)
         cleaned_path = f"{path}_cleaned.csv"

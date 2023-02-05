@@ -1,11 +1,11 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import pandas as pd
 
 ### TO-DO: Reconstruct book events before feature generation
 
 
-def reconstruct_book_events(input_files: List[Dict[str]] = None):
+def reconstruct_book_events(input_files: Union[List[Dict], None] = None):
     """Reconstruct the book events from the cleaned data"""
 
     path_list = []

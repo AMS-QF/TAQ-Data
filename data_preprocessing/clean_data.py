@@ -11,11 +11,13 @@ def clean_data(input_file: List[str]):
 
         if "trades" in input_file:
             print("Cleaning trades file: {}".format(input_file))
+            print(" ")
 
             clean_path = chunk_clean(input_file, False)
 
         elif "quotes" in input_file:
             print("Cleaning quotes file: {}".format(input_file))
+            print(" ")
 
             clean_path = chunk_clean(input_file, True)
 

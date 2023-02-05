@@ -4,6 +4,7 @@ import os
 from datetime import timedelta
 
 import pandas as pd
+import pandas_market_calendars as mcal
 from fabric import Connection
 
 
@@ -83,24 +84,37 @@ class client_connection:
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
 
+        # get market days
+        market_days = mcal.get_calendar("NYSE").valid_days(start_date=start, end_date=end)
+        market_days = [x.date() for x in market_days]
+
         current_dt = start
         path_list = []
         while current_dt < end:
+
+            if current_dt.date() not in market_days:
+                current_dt = current_dt + timedelta(days=1)
+                continue
+
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            df, path = self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str, dir_name)
-            path_list.append(path)
+            self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str, dir_name)
 
             # create directory if it doesn't exist
             isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv")
-            day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
+            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv", low_memory=False)
+
+            if len(day_quotes) > 0:
+                day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
+                path_list.append(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
+                print(" ")
+                print(f"Saved Quotes for {symbol} on {current_dt}")
+
             del day_quotes
             gc.collect()
-            print(f"Saved Quotes for {symbol} on {current_dt}")
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
@@ -111,24 +125,34 @@ class client_connection:
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
 
+        # get list of market days
+        market_days = mcal.get_calendar("NYSE").valid_days(start_date=start, end_date=end)
+        market_days = [x.date() for x in market_days]
+
         current_dt = start
 
         path_list = []
         while current_dt < end:
+
+            if current_dt.date() not in market_days:
+                current_dt = current_dt + timedelta(days=1)
+                continue
+
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            df, path = self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str, dir_name)
-
-            path_list.append(path)
+            self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str, dir_name)
 
             # create directory if it doesn't exist
             isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv")
+            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv", low_memory=False)
+
             if len(day_trades) > 0:
                 day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
+                path_list.append(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
+                print(" ")
                 print(f"Saved trades for {symbol} on {current_dt}")
 
             del day_trades
