@@ -39,7 +39,7 @@ class client_connection:
         result = self.conn.run(command)
         return result
 
-    def client_get_trades(self, exchange, symbol, start, end, dir_name=None):
+    def client_get_trades(self, symbol, start, end, dir_name=None):
         """Get trades from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
@@ -50,8 +50,8 @@ class client_connection:
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
-            command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
-            print(f"Trade Query for {exchange} {symbol} {start} {end}")
+            command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end}"
+            print(f"Trade Query for {symbol} {start} {end}")
             self.run_command(command)
 
             # get the file from the server saving to our local directory
@@ -59,7 +59,7 @@ class client_connection:
 
         return df, dir_name
 
-    def client_get_quotes(self, exchange, symbol, start, end, dir_name=None):
+    def client_get_quotes(self, symbol, start, end, dir_name=None):
         """Get quotes from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
@@ -70,8 +70,8 @@ class client_connection:
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
-            command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
-            print(f"Quote Query for {exchange} {symbol} {start} {end}")
+            command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {symbol} {start} {end}"
+            print(f"Quote Query for {symbol} {start} {end}")
             self.run_command(command)
 
             # get the file from the server saving to our local directory
@@ -79,7 +79,7 @@ class client_connection:
 
         return df, dir_name
 
-    def get_quotes_range(self, exchange, symbol, start, end, dir_name=None):
+    def get_quotes_range(self, symbol, start, end, dir_name=None):
         """Get quotes for a range of dates by calling client_get_quotes for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
@@ -98,7 +98,7 @@ class client_connection:
 
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str, dir_name)
+            self.client_get_quotes(symbol, current_dt_str, next_dt_str, dir_name)
 
             # create directory if it doesn't exist
             isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")
@@ -120,7 +120,7 @@ class client_connection:
         self.conn.close()
         return path_list
 
-    def get_trades_range(self, exchange, symbol, start, end, dir_name=None):
+    def get_trades_range(self, symbol, start, end, dir_name=None):
         """Get trades for a range of dates by calling client_get_trades for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
@@ -140,7 +140,7 @@ class client_connection:
 
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str, dir_name)
+            self.client_get_trades(symbol, current_dt_str, next_dt_str, dir_name)
 
             # create directory if it doesn't exist
             isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")

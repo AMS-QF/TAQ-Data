@@ -33,12 +33,12 @@ Here we will show how to access the TAQ-Clickhouse database remotely, clean data
 
 Command has the following format:
 
-`python run_jobs.py --exchange <exchange> --symbol <symbol> --start_date <start_date> --end_date <end_date>`
+`python run_jobs.py  --symbol <symbol> --start_date <start_date> --end_date <end_date>`
 
 Example:
 
 * Important to use single quotes around the exchange argument as the exchange is inputted as a list
 
-```python run_jobs.py --exchange "'N'" --symbol "AMZN" --start_date "2020-01-01" --end_date "2020-01-03"```
+```python run_jobs.py  --symbol "AMZN" --start_date "2020-01-01" --end_date "2020-01-04"```
         
 **Do not republish, distribute or utilize the sample data found in this repo for any purposes other than academic research**

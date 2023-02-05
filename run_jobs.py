@@ -5,14 +5,14 @@ from feature_generation import generate_features
 from pipelines import event_reconstruction
 
 
-def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
+def run_jobs(symbol: str, start_date: str, end_date: str):
 
     # connect to database
     conn = load_data.connect_to_db()
 
     # load data
-    trade_path = load_data.get_trades(conn, exchange, symbol, start_date, end_date)
-    quote_path = load_data.get_quotes(conn, exchange, symbol, start_date, end_date)
+    trade_path = load_data.get_trades(conn, symbol, start_date, end_date)
+    quote_path = load_data.get_quotes(conn, symbol, start_date, end_date)
 
     # clean data
 
@@ -40,11 +40,10 @@ def run_jobs(exchange: str, symbol: str, start_date: str, end_date: str):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exchange", type=str, default="'N'")
     parser.add_argument("--symbol", type=str, default="AAPL")
     parser.add_argument("--start_date", type=str, default="2020-01-01")
     parser.add_argument("--end_date", type=str, default="2020-01-03")
 
     args = parser.parse_args()
 
-    run_jobs(exchange=args.exchange, symbol=args.symbol, start_date=args.start_date, end_date=args.end_date)
+    run_jobs(symbol=args.symbol, start_date=args.start_date, end_date=args.end_date)

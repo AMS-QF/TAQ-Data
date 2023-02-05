@@ -21,40 +21,36 @@ def connect_to_db():
     return conn
 
 
-def get_trades(conn: Connection, exchange: str, symbol: str, start: str, end: str, data_dir: str = None):
+def get_trades(conn: Connection, symbol: str, start: str, end: str, data_dir: str = None):
     """Get trades from the database"""
 
-    print(f"Getting trades for {exchange} {symbol} {start} {end}")
+    print(f"Getting trades for  {symbol} {start} {end}")
 
-    path_list = conn.get_trades_range(exchange, symbol, start, end, data_dir)
+    path_list = conn.get_trades_range(symbol, start, end, data_dir)
 
     return path_list
 
 
-def get_quotes(conn: Connection, exchange: str, symbol: str, start: str, end: str, data_dir: str = None):
+def get_quotes(conn: Connection, symbol: str, start: str, end: str, data_dir: str = None):
     """Get quotes from the database"""
 
-    path_list = conn.get_quotes_range(exchange, symbol, start, end, data_dir)
+    path_list = conn.get_quotes_range(symbol, start, end, data_dir)
 
     return path_list
 
 
-def get_sample_trades(
-    conn: Connection, exchange="N", symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir=None
-):
+def get_sample_trades(conn: Connection, symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir=None):
     """Get a sample of trades from the database"""
 
-    trades, path = get_trades(conn, exchange, symbol, start_date, end_date, data_dir)
+    trades, path = get_trades(conn, symbol, start_date, end_date, data_dir)
 
     return trades, path
 
 
-def get_sample_quotes(
-    conn: Connection, exchange="N", symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir=None
-):
+def get_sample_quotes(conn: Connection, symbol="AAPL", start_date="2021-01-01", end_date="2021-01-31", data_dir=None):
     """Get a sample of quotes from the database"""
 
-    quotes, path = get_quotes(conn, exchange, symbol, start_date, end_date, data_dir)
+    quotes, path = get_quotes(conn, symbol, start_date, end_date, data_dir)
 
     return quotes, path
 
@@ -64,7 +60,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--exchange", type=str, default="N")
     parser.add_argument("--symbol", type=str, default="AAPL")
     parser.add_argument("--start_date", type=str, default="2021-01-01")
     parser.add_argument("--end_date", type=str, default="2021-01-31")
@@ -74,10 +69,10 @@ if __name__ == "__main__":
 
     conn = connect_to_db()
 
-    path_list = get_trades(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
+    path_list = get_trades(conn, args.symbol, args.start_date, args.end_date, args.data_dir)
 
     print(f"Trades saved to {path_list}")
 
-    path_list = get_quotes(conn, args.exchange, args.symbol, args.start_date, args.end_date, args.data_dir)
+    path_list = get_quotes(conn, args.symbol, args.start_date, args.end_date, args.data_dir)
 
     print(f"Quotes saved to {path_list}")
