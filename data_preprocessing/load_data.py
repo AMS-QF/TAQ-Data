@@ -24,8 +24,6 @@ def connect_to_db():
 def get_trades(conn: Connection, symbol: str, start: str, end: str, data_dir: str = None):
     """Get trades from the database"""
 
-    print(f"Getting trades for  {symbol} {start} {end}")
-
     path_list = conn.get_trades_range(symbol, start, end, data_dir)
 
     return path_list
