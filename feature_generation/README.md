@@ -10,11 +10,11 @@ If no  trade_features  or  quote_features  are specified, all available features
 
 If no input directory is specified, features will be generated for all files in the raw data directory.
 
-```python scripts/generate_features.py --trade_features <feature_list> --quote_features <feature_list> --input_file <input_file>```
+```python generate_features.py --trade_features <feature_list> --quote_features <feature_list> --input_file <input_file>```
 
 Example:
 
-```python scripts/generate_features.py  --input_file data/raw_data/AAPL_quotes.csv ```
+```python generate_features.py  --input_file ../data/raw_data/2020-01-02/F_trades.csv ```
 
 
 

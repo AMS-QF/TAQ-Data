@@ -1,11 +1,13 @@
 import argparse
 import os
+import sys
 from typing import List, Union
 
 import pandas as pd
 
-from feature_generation.generators import parent_generator
-from feature_generation.list_features import list_features
+sys.path.append("feature_generation/")
+from generators import parent_generator
+from list_features import list_features
 
 
 def generate_features(
@@ -35,8 +37,6 @@ def generate_features(
         dir_name = file.split("/")[:-1]
         dir_name = "/".join(dir_name)
 
-        print(dir_name)
-
         is_exist = os.path.exists(dir_name)
         if not is_exist:
             os.makedirs(dir_name)
@@ -49,26 +49,35 @@ def generate_features(
 
             print("Generating Features: {}".format(features_to_generate))
 
-            df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
+            # generate features
+            for feature in features_to_generate:
+                df_copy, features_to_add = parent_generator(df, feature)
+
+                # add features to dataframe
+                for feature in features_to_add:
+                    df[feature] = df_copy[feature]
 
         # generate quote features via parent_generator
-        elif quote_features:
+        if quote_features:
             """Generate Quote Features"""
 
             features_to_generate = [feature for feature in quote_features if feature not in df.columns]
 
             print("Generating Features: {}".format(features_to_generate))
 
-            df = pd.DataFrame(list(map(lambda x: parent_generator(df, x), features_to_generate))[-1])
+            # generate features
+            for feature in features_to_generate:
+                df_copy, features_to_add = parent_generator(df, feature)
 
-        else:
-            print(f"File {file} is not a trades or quotes file or no features were specified.")
+                # add features to dataframe
+                for feature in features_to_add:
+                    df[feature] = df_copy[feature]
 
         # save to file
         df.to_csv(f"{file}_features.csv", index=False)
 
 
-# python scripts/feature_gen/generate_features.py
+# python generate_features.py  --input_file ../data/raw_data/2020-01-02/AMZN_reconstructed.csv
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Generate Features")

@@ -1,7 +1,10 @@
 import argparse
+import sys
 from typing import List
 
-from data_preprocessing.preprocess import chunk_clean
+sys.path.append("data_preprocessing/")
+
+from preprocess import chunk_clean
 
 
 def clean_data(input_file: List[str]):
@@ -31,12 +34,12 @@ def clean_data(input_file: List[str]):
     return clean_path_list
 
 
-# python data_preprocessing/clean_data.py --input_file <input_file>
+# python clean_data.py --input_file <input_file>
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-- input_file", type=str, default="AAPL.csv")
+    parser.add_argument("--input_file", type=str, default="AAPL.csv")
 
     args = parser.parse_args()
 

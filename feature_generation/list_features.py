@@ -59,11 +59,9 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
 
         generated_trade_features = {
             "Trade_Side": "Side of the Trade",
-            "Prevailing_Best_Bid_Price": "National Best Bid at the time of the Trade",
-            "Prevailing_Best_Offer_Price": "National Best Offer at the time of the Trade",
-            "Prevailing_Best_Bid_Size": "Size of the National Best Bid at the time of the Trade",
-            "Prevailing_Best_Offer_Size": "Size of the National Best Offer at the time of the Trade",
+            "Prevailing_NBBO": "National Best Bid and National Best Offer at the time of the Trade",
             "Price_Impact": "Percentage of the Trade which excecuted outside National Best Bid and National Best Offer",
+            "MOX_Identifier": "Indicates all trades and quotes from executable order",
         }
 
         trade_features.update(generated_trade_features)
@@ -78,6 +76,7 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
             "Realized_Spread_BBO": " Spread of the National Best Bid and National Best Offer accounting for impact cost",
             "Imbalance_BBO": "Ratio between the National Best Bid and National Best Offer",
             "Imbalance_Weighted_Effective_Spread_BBO": "Imbalance Weighted Effective Spread of the National Best Bid and National Best Offer",
+            "MOX_Identifier": "Indicates all trades and quotes from executable order",
         }
 
         quote_features.update(generated_quote_features)

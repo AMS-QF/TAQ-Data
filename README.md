@@ -33,12 +33,14 @@ Here we will show how to access the TAQ-Clickhouse database remotely, clean data
 
 Command has the following format:
 
-`python run_jobs.py --exchange <exchange> --symbol <symbol> --start_date <start_date> --end_date <end_date>`
+`python run_jobs.py  --symbol <symbol> --start_date <start_date> --end_date <end_date>`
 
 Example:
 
-* Important to use single quotes around the exchange argument as the exchange is inputted as a list
+```python run_jobs.py  --symbol "AMZN" --start_date "2020-01-01" --end_date "2020-01-04"```
 
-```python run_jobs.py --exchange "'N'" --symbol "AMZN" --start_date "2020-01-01" --end_date "2020-01-03"```
+Notes
+- Sometimes the connection will be reset by peer; Hitting enter in the terminal will restart the connection
+- To check whether a query has finished you can login into the TAQ server with a single terminal and search for running jobs (within the docker container)
         
 **Do not republish, distribute or utilize the sample data found in this repo for any purposes other than academic research**

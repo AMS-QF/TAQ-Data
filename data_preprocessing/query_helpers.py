@@ -31,15 +31,19 @@ class client_connection:
         self.conn = Connection(
             host=self.host,
             user=self.router_username,
+            connect_timeout=None,
             connect_kwargs={"password": self.router_password},
         )
         logging.basicConfig(level=logging.INFO)
 
-    def run_command(self, command):
-        result = self.conn.run(command)
+    def run_command(self, command, timeout=None, keep_alive=30):
+        """Run a command on the remote server"""
+
+        command = f"{command} --keepalive={keep_alive}"
+        result = self.conn.run(command, hide=True, warn=True, timeout=timeout)
         return result
 
-    def client_get_trades(self, exchange, symbol, start, end, dir_name=None):
+    def client_get_trades(self, symbol, start, end, dir_name=None):
         """Get trades from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
@@ -50,16 +54,16 @@ class client_connection:
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
-            command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
-            print(f"Trade Query for {exchange} {symbol} {start} {end}")
-            self.run_command(command)
+            command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end}"
+            print(f"Trade Query for {symbol} {start} {end}")
+            self.run_command(command, keep_alive=30)
 
             # get the file from the server saving to our local directory
             df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
 
         return df, dir_name
 
-    def client_get_quotes(self, exchange, symbol, start, end, dir_name=None):
+    def client_get_quotes(self, symbol, start, end, dir_name=None):
         """Get quotes from the database via remote execution of server_helpers.py"""
 
         if dir_name is None:
@@ -70,16 +74,16 @@ class client_connection:
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
-            command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {exchange} {symbol} {start} {end}"
-            print(f"Quote Query for {exchange} {symbol} {start} {end}")
-            self.run_command(command)
+            command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {symbol} {start} {end}"
+            print(f"Quote Query for {symbol} {start} {end}")
+            self.run_command(command, keep_alive=30)
 
             # get the file from the server saving to our local directory
             df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
 
         return df, dir_name
 
-    def get_quotes_range(self, exchange, symbol, start, end, dir_name=None):
+    def get_quotes_range(self, symbol, start, end, dir_name=None):
         """Get quotes for a range of dates by calling client_get_quotes for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
@@ -98,19 +102,18 @@ class client_connection:
 
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            self.client_get_quotes(exchange, symbol, current_dt_str, next_dt_str, dir_name)
+            self.client_get_quotes(symbol, current_dt_str, next_dt_str, dir_name)
 
             # create directory if it doesn't exist
             isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv", low_memory=False)
+            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv", low_memory=False, on_bad_lines="skip")
 
             if len(day_quotes) > 0:
                 day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
                 path_list.append(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
-                print(" ")
                 print(f"Saved Quotes for {symbol} on {current_dt}")
 
             del day_quotes
@@ -118,9 +121,10 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
+        print(" ")
         return path_list
 
-    def get_trades_range(self, exchange, symbol, start, end, dir_name=None):
+    def get_trades_range(self, symbol, start, end, dir_name=None):
         """Get trades for a range of dates by calling client_get_trades for each day (preventing timeouts)"""
         start = pd.to_datetime(start)
         end = pd.to_datetime(end)
@@ -140,19 +144,18 @@ class client_connection:
 
             current_dt_str = str(current_dt.date())
             next_dt_str = str((current_dt + timedelta(days=1)).date())
-            self.client_get_trades(exchange, symbol, current_dt_str, next_dt_str, dir_name)
+            self.client_get_trades(symbol, current_dt_str, next_dt_str, dir_name)
 
             # create directory if it doesn't exist
             isExist = os.path.exists(f"data/raw_data/{current_dt.date()}")
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv", low_memory=False)
+            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv", low_memory=False, on_bad_lines="skip")
 
             if len(day_trades) > 0:
                 day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
                 path_list.append(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
-                print(" ")
                 print(f"Saved trades for {symbol} on {current_dt}")
 
             del day_trades
@@ -161,4 +164,5 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
+        print(" ")
         return path_list
