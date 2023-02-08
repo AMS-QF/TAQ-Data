@@ -76,7 +76,7 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
             "Realized_Spread_BBO": " Spread of the National Best Bid and National Best Offer accounting for impact cost",
             "Imbalance_BBO": "Ratio between the National Best Bid and National Best Offer",
             "Imbalance_Weighted_Effective_Spread_BBO": "Imbalance Weighted Effective Spread of the National Best Bid and National Best Offer",
-            "MOX_Identifier": "Indicates all trades and quotes from executable order",
+            "MOX_Identifier": "Indicates all trades and quotes from executable order up to millisecond precision",
         }
 
         quote_features.update(generated_quote_features)
@@ -90,7 +90,7 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
         )
 
 
-# python scripts/feature_gen/list_features.py
+# python feature_generation/list_features.py
 if __name__ == "__main__":
     trade_features, quote_features = list_features(raw_data=True, trades=True, quotes=True)
     print("Trade Features:")

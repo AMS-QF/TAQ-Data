@@ -14,6 +14,8 @@ def generate_features(
     trade_features: List[str] = None, quote_features: List[str] = None, input_file=List[Union[str, None]]
 ):
 
+    # input file can be trades or quotes or reconstructed events
+
     # If no features are specified, generate all features (raw and generated)
     if trade_features is None and quote_features is None:
         trade_features, quote_features = list_features(names_only=True)
@@ -21,7 +23,7 @@ def generate_features(
     # for each file, generate features
     for file in input_file:
         # read in raw data file
-        df = pd.read_csv(f"{file}", low_memory=False)
+        df = pd.read_csv(f"{file}", low_memory=False, index_col=0)
 
         # remove .csv from file name
         if ".csv" in file:
@@ -41,37 +43,20 @@ def generate_features(
         if not is_exist:
             os.makedirs(dir_name)
 
-        # generate trade features via parent_generator
-        if trade_features:
-            """Generate Trade Features"""
+        trade_features_to_generate = [feature for feature in trade_features if feature not in df.columns]
+        quote_features_to_generate = [feature for feature in quote_features if feature not in df.columns]
 
-            features_to_generate = [feature for feature in trade_features if feature not in df.columns]
+        features_to_generate = set(trade_features_to_generate + quote_features_to_generate)
 
-            print("Generating Features: {}".format(features_to_generate))
+        print("Generating Features: {}".format(features_to_generate))
 
-            # generate features
-            for feature in features_to_generate:
-                df_copy, features_to_add = parent_generator(df, feature)
+        # generate features
+        for feature in features_to_generate:
+            df_copy, features_to_add = parent_generator(df, feature)
 
-                # add features to dataframe
-                for feature in features_to_add:
-                    df[feature] = df_copy[feature]
-
-        # generate quote features via parent_generator
-        if quote_features:
-            """Generate Quote Features"""
-
-            features_to_generate = [feature for feature in quote_features if feature not in df.columns]
-
-            print("Generating Features: {}".format(features_to_generate))
-
-            # generate features
-            for feature in features_to_generate:
-                df_copy, features_to_add = parent_generator(df, feature)
-
-                # add features to dataframe
-                for feature in features_to_add:
-                    df[feature] = df_copy[feature]
+            # add features to dataframe
+            for feature in features_to_add:
+                df[feature] = df_copy[feature]
 
         # save to file
         df.to_csv(f"{file}_features.csv", index=False)
