@@ -88,8 +88,18 @@ def generate_prevailing_nbbo(df: pd.DataFrame) -> pd.DataFrame:
 def generate_mox_identifier(df: pd.DataFrame) -> pd.DataFrame:
     """Generate MOX Identifier"""
 
-    df["MOX_Identifier"] = pd.Series(np.nan, index=df.index)
-    # Look into MOX Identifier
+    df_copy = df.copy()
+    df_copy.index = pd.to_datetime(df_copy.index)
+
+    # round the index to the nearest millisecond
+    grouped_df = df_copy.groupby(df_copy.index.map(lambda t: t.round("1us")))
+
+    # assign a unique identifier to each group
+    for i, (name, group) in enumerate(grouped_df):
+        df_copy.loc[group.index, "MOX_Identifier"] = i
+
+    df["MOX_Identifier"] = df_copy["MOX_Identifier"].values
+
     return df, ["MOX_Identifier"]
 
 
