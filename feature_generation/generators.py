@@ -102,9 +102,6 @@ def generate_mox_identifier(df: pd.DataFrame) -> pd.DataFrame:
 
     return df, ["MOX_Identifier"]
 
-    # Look into MOX Identifier
-    return df, ["MOX_Identifier"]
-
 
 def generate_price_impact(df: pd.DataFrame) -> pd.DataFrame:
 

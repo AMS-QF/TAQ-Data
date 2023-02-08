@@ -22,8 +22,8 @@ def generate_features(
 
     # for each file, generate features
     for file in input_file:
-        # read in raw data file
-        df = pd.read_csv(f"{file}", low_memory=False, index_col=0)
+        # read in raw data file accounting for iter index
+        df = pd.read_csv(f"{file}", low_memory=False, index_col="index")
 
         # remove .csv from file name
         if ".csv" in file:
@@ -59,7 +59,8 @@ def generate_features(
                 df[feature] = df_copy[feature]
 
         # save to file
-        df.to_csv(f"{file}_features.csv", index=False)
+        df.index.name = "index"
+        df.to_csv(f"{file}_features.csv", index=True)
 
 
 # python generate_features.py  --input_file ../data/raw_data/2020-01-02/AMZN_reconstructed.csv

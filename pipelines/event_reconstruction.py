@@ -31,9 +31,11 @@ def reconstruct_book_events(input_files: Union[List[Dict], None] = None):
         # save to file
         reconstructed_path = base_path + "reconstructed.csv"
 
+        # save file names
         all_events = all_events.drop(columns=["index_to_sort"])
+        all_events.index.name = "index"
 
-        all_events.to_csv(reconstructed_path)
+        all_events.to_csv(reconstructed_path, index=True)
 
         path_list.append(reconstructed_path)
 
