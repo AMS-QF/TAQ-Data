@@ -37,7 +37,7 @@ Command has the following format:
 
 Example:
 
-```python run_jobs.py  --symbol "AMZN" --start_date "2020-01-01" --end_date "2020-01-03"```
+```python run_jobs.py  --symbol "AAPL" --start_date "2020-01-01" --end_date "2020-01-03"```
 
 Notes
 - Sometimes the connection will be reset by peer; Hitting enter in the terminal will restart the connection
