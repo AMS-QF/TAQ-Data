@@ -58,7 +58,7 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
 
         generated_trade_features = {
             "Trade_Side": "Side of the Trade",
-            "Prevailing_NBBO": "National Best Bid and National Best Offer at the time of the Trade",
+            # "Prevailing_NBBO": "National Best Bid and National Best Offer at the time of the Trade",
             "Price_Impact": "Percentage of the Trade which excecuted outside National Best Bid and National Best Offer",
             "MOX_Identifier": "Indicates all trades and quotes from executable order",
         }
