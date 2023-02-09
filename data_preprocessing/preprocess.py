@@ -16,7 +16,7 @@ def clean_trades(trades):
     # convert datetime to index using participant timestamp
     trades["Date"] = pd.to_datetime(trades["Date"])
     trades["Participant_Timestamp"] = pd.to_datetime(
-        trades["Participant_Timestamp"].astype(str).str.zfill(12), format="%H%M%S%f"
+        trades["Participant_Timestamp"].astype(str).str.zfill(15), format="%H%M%S%f"
     )
     trades.index = trades["Date"].apply(lambda x: x) + trades["Participant_Timestamp"].apply(
         lambda x: timedelta(hours=x.hour, minutes=x.minute, seconds=x.second, microseconds=x.microsecond)
@@ -57,7 +57,7 @@ def clean_quotes(quotes, drop_after_hours=True):
     # parse date and time
     quotes["Date"] = pd.to_datetime(quotes["Date"])
     quotes["Participant_Timestamp"] = pd.to_datetime(
-        quotes["Participant_Timestamp"].astype(str).str.zfill(12), format="%H%M%S%f"
+        quotes["Participant_Timestamp"].astype(str).str.zfill(15), format="%H%M%S%f"
     )
 
     # convert datetime to index
