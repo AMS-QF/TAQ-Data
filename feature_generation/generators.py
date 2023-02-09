@@ -49,7 +49,7 @@ def generate_imbalance(df: pd.DataFrame) -> pd.DataFrame:
     """Generate  Imbalance"""
     df["Imbalance"] = df["Bid_Size"] / df["Offer_Size"]
 
-    return df, ["Imbalance_BBO"]
+    return df, ["Imbalance"]
 
 
 def generate_trade_side(df: pd.DataFrame) -> pd.DataFrame:
@@ -121,12 +121,12 @@ def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame
     """Wrapper function to call the correct feature generator function"""
     # This is a mapping of the feature name to the function that generates it
     feature_mappping = {
-        "Effective_Spread_BBO": generate_effective_spread,
-        "Realized_Spread_BBO": generate_realized_spread,
-        "Imbalance_BBO": generate_imbalance,
-        "Imbalance_Weighted_Effective_Spread_BBO": generate_imbalance_weighted_effective_spread,
-        "Midprice_BBO": generate_midprice,
-        "Microprice_BBO": generate_microprice,
+        "Effective_Spread": generate_effective_spread,
+        "Realized_Spread": generate_realized_spread,
+        "Imbalance": generate_imbalance,
+        "Imbalance_Weighted_Effective_Spread": generate_imbalance_weighted_effective_spread,
+        "Midprice": generate_midprice,
+        "Microprice": generate_microprice,
         "Trade_Side": generate_trade_side,
         # "Prevailing_NBBO": generate_prevailing_nbbo,
         "MOX_Identifier": generate_mox_identifier,
