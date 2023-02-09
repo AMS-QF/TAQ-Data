@@ -40,7 +40,7 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
                 "FINRA_BBO_Indicator": "FINRA_BBO_Indicator",
                 "FINRA_ADF_MPID_Indicator": "FINRA_ADF_MPID_Indicator",
                 "Quote_Cancel_Correction": "Quote_Cancel_Correction",
-                "Source_of_Quote": "Source_of_Quote",
+                "Source_Of_Quote": "Source_of_Quote",
                 "Retail_Interest_Indicator": "Retail_Interest_Indicator",
                 "Short_Sale_Restriction_Indicator": "Short_Sale_Restriction_Indicator",
                 "LULD_BBO_Indicator": "LULD_BBO_Indicator",
