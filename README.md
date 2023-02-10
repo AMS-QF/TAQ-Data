@@ -42,5 +42,6 @@ Example:
 Notes
 - Sometimes the connection will be reset by peer; Hitting enter in the terminal will restart the connection
 - To check whether a query has finished you can login into the TAQ server with a single terminal and search for running jobs (within the docker container)
+- Feel free to create a directory for your own research called `personal_research` in the root directory of the repo. This directory is ignored by git and can be used to store your own scripts and data
         
 **Do not republish, distribute or utilize the sample data found in this repo for any purposes other than academic research**
