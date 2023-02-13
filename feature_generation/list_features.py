@@ -27,30 +27,29 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
 
         if quotes:
             raw_quote_features = {
-                "Exchange": "Exchange of the Quote",
-                "Symbol": "Symbol of Quote",
-                "Bid_Price": "Best Bid Price on Exchange",
-                "Bid_Size": "Size of the Best Bid on Exchange",
-                "Offer_Price": "Best Offer Price on Exchange",
-                "Offer_Size": "Size of the Best Offer on Exchange",
-                "Quote_Condition": "Condition of the Quote",
-                "Sequence_Number": "Sequence Number of the Quote",
-                "Finra_Bbo_Indicator": "Indicates if the quote is a FINRA BBO",
-                "Source_of_Quote": "Source which generated the Quote",
-                "Best_Bid_Exchange": "Exchange with the National Best Bid",
-                "Best_Bid_Price": "National Best Bid Price",
-                "Best_Bid_Size": "Size of the National Best Bid",
-                "Best_Bid_FINRA_Market_Maker_ID": "FINRA Market Maker ID of the National Best Bid",
-                "Best_Offer_Exchange": "Exchange with the National Best Offer",
-                "Best_Offer_Size": "Size of the National Best Offer",
-                "Best_Offer_FINRA_Market_Maker_ID": "FINRA Market Maker ID of the National Best Offer",
-                "LULD_Indicator": "Indicates if the quote is a LULD quote",
-                "LULD_NBBO_Indicator": "Indicates if the quote is a LULD NBBO",
-                "SIP_Generated_Message_Identifier": "Indentifies associated SIP messages",
-                "FINRA_ADF_MPID_Indicator": "Indicates if the quote is a FINRA ADF quote",
-                "Security_Status_Indicator": "Reports trading suspension status of the security",
-                "Quote_Cancel_Correction": "Indicates if the quote is a correction",
-                "National_BBO_Ind": "Indicates if the quote is a National BBO",
+                "Time": "Time",
+                "Exchange": "Exchange",
+                "Symbol": "Symbol",
+                "Bid_Price": "Bid_Price",
+                "Bid_Size": "Bid_Size",
+                "Offer_Price": "Offer_Price",
+                "Offer_Size": "Offer_Size",
+                "Quote_Condition": "Quote_Condition",
+                "Sequence_Number": "Sequence_Number",
+                "National_BBO_Ind": "National_BBO_Indicator",
+                "FINRA_BBO_Indicator": "FINRA_BBO_Indicator",
+                "FINRA_ADF_MPID_Indicator": "FINRA_ADF_MPID_Indicator",
+                "Quote_Cancel_Correction": "Quote_Cancel_Correction",
+                "Source_Of_Quote": "Source_of_Quote",
+                "Retail_Interest_Indicator": "Retail_Interest_Indicator",
+                "Short_Sale_Restriction_Indicator": "Short_Sale_Restriction_Indicator",
+                "LULD_BBO_Indicator": "LULD_BBO_Indicator",
+                "SIP_Generated_Message_Identifier": "SIP_Generated_Message_Identifier",
+                "National_BBO_LULD_Indicator": "NBBO_LULD_Indicator",
+                "Participant_Timestamp": "Participant_Timestamp",
+                "FINRA_ADF_Timestamp": "FINRA_ADF_Timestamp",
+                "FINRA_ADF_Market_Participant_Quote_Indicator": "FINRA_ADF_Market_Participant_Quote_Indicator",
+                "Security_Status_Indicator": "Security_Status_Indicator",
             }
             quote_features.update(raw_quote_features)
 
@@ -59,7 +58,7 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
 
         generated_trade_features = {
             "Trade_Side": "Side of the Trade",
-            "Prevailing_NBBO": "National Best Bid and National Best Offer at the time of the Trade",
+            # "Prevailing_NBBO": "National Best Bid and National Best Offer at the time of the Trade",
             "Price_Impact": "Percentage of the Trade which excecuted outside National Best Bid and National Best Offer",
             "MOX_Identifier": "Indicates all trades and quotes from executable order",
         }
@@ -70,12 +69,12 @@ def list_features(raw_data=False, trades=True, quotes=True, names_only=False):
         """Generate Quote Features"""
 
         generated_quote_features = {
-            "Midprice_BBO": "Midprice of the National Best Bid and National Best Offer",
-            "Microprice_BBO": "Microprice of the National Best Bid and National Best Offer",
-            "Effective_Spread_BBO": "Effective Spread of the National Best Bid and National Best Offer",
-            "Realized_Spread_BBO": " Spread of the National Best Bid and National Best Offer accounting for impact cost",
-            "Imbalance_BBO": "Ratio between the National Best Bid and National Best Offer",
-            "Imbalance_Weighted_Effective_Spread_BBO": "Imbalance Weighted Effective Spread of the National Best Bid and National Best Offer",
+            "Midprice": "Midprice of the given quote",
+            "Microprice": "Microprice of the given quote",
+            "Effective_Spread": "Effective Spread of the   given quote",
+            "Realized_Spread": " Spread of the quote accounting for impact cost",
+            "Imbalance": "Ratio between the bid and offer size",
+            "Imbalance_Weighted_Effective_Spread": "Imbalance Weighted Effective Spread of the quote",
             "MOX_Identifier": "Indicates all trades and quotes from executable order up to millisecond precision",
         }
 
