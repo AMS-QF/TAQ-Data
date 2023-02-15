@@ -121,6 +121,7 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
+        self.conn._sftp = None
         print(" ")
         return path_list
 
@@ -164,5 +165,6 @@ class client_connection:
             current_dt = current_dt + timedelta(days=1)
 
         self.conn.close()
+        self.conn._sftp = None
         print(" ")
         return path_list
