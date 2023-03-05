@@ -39,6 +39,10 @@ Example:
 
 ```python run_jobs.py  --symbol "AAPL" --start_date "2020-01-01" --end_date "2020-01-03"```
 
+To download data for entire S&P500:
+
+```python run_jobs.py  --symbol "S&P500" --start_date "2020-01-01" --end_date "2020-01-03"```
+
 Notes
 - Sometimes the connection will be reset by peer; Hitting enter in the terminal will restart the connection
 - To check whether a query has finished you can login into the TAQ server with a single terminal and search for running jobs (within the docker container)

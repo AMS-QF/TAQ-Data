@@ -1,5 +1,7 @@
 import argparse
 
+import pandas as pd
+
 from data_preprocessing import clean_data, load_data
 from feature_generation import generate_features
 from pipelines import event_reconstruction
@@ -36,7 +38,7 @@ def run_jobs(symbol: str, start_date: str, end_date: str):
     generate_features.generate_features(input_file=reconstructed_path)
 
 
-# python run_jobs.py --exchange N --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-03
+# python run_jobs.py --symbol AAPL --start_date 2021-01-01 --end_date 2021-01-03
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
@@ -46,4 +48,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    run_jobs(symbol=args.symbol, start_date=args.start_date, end_date=args.end_date)
+    if args.symbol == "S&P500":
+
+        symbol_list = pd.read_csv("data/sp500.txt", sep=" ")
+
+        for symbol in symbol_list:
+            print(f"Processing {symbol}...")
+            run_jobs(symbol=symbol, start_date=args.start_date, end_date=args.end_date)
