@@ -54,4 +54,10 @@ if __name__ == "__main__":
 
         for symbol in symbol_list:
             print(f"Processing {symbol}...")
-            run_jobs(symbol=symbol, start_date=args.start_date, end_date=args.end_date)
+            try:
+                run_jobs(symbol=symbol, start_date=args.start_date, end_date=args.end_date)
+            except Exception as e:
+                print(f"Error processing {symbol}: {e}")
+
+    else:
+        run_jobs(symbol=args.symbol, start_date=args.start_date, end_date=args.end_date)
