@@ -120,6 +120,8 @@ def generate_imbalance_weighted_effective_spread(df: pd.DataFrame) -> pd.DataFra
 def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame:
     """Wrapper function to call the correct feature generator function"""
     # This is a mapping of the feature name to the function that generates it
+
+    # idea- separate features into base feature and then model-specific generators (e.g. linear regression coefficients for price impact)
     feature_mappping = {
         "Effective_Spread": generate_effective_spread,
         "Realized_Spread": generate_realized_spread,
