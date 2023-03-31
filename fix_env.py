@@ -1,3 +1,4 @@
+import re
 
 def remove_dashes_and_strings():
     # remove the dashes
@@ -221,3 +222,4 @@ def remove_dashes_and_strings():
     output_string = pattern.sub('', input_string)
 
     return(output_string)
+
