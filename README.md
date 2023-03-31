@@ -21,6 +21,14 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
 
     `conda env create -f environment.yml`
 
+- Export the conda env to a yaml file
+
+    `conda env export > environment.yml`
+
+- Clean the environment.yml file
+
+    `python utils/remove_dependencies.py`
+
 - Setup Pre-commit Hooks for formatting
 
     `conda install isort autoflake black pre-commit`
