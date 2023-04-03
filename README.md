@@ -26,6 +26,8 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
     `conda install isort autoflake black pre-commit`
     `pre-commit install`
 
+- Adds Github action for conda enviroment, linting, and testing
+
 
 ### Example Usage
 
