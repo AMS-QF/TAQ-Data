@@ -21,12 +21,26 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
 
     `conda env create -f environment.yml`
 
+- Export the conda env to a yaml file
+
+    `conda env export > environment.yml`
+
+- Clean the environment.yml file
+
+    `python utils/remove_dependencies.py`
+
+- Create a conda env using the environment.yml file along with name arguement
+
+    `conda env create -f environment.yml -n taq`
+
 - Setup Pre-commit Hooks for formatting
 
     `conda install isort autoflake black pre-commit`
     `pre-commit install`
 
+
 - Adds Github action for conda enviroment, linting, and testing
+
 
 
 ### Example Usage
