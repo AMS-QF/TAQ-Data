@@ -53,10 +53,41 @@ def generate_imbalance(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def generate_trade_side(df: pd.DataFrame) -> pd.DataFrame:
-    """Classify trade side"""
+    """Classify trade side using tick test"""
+    trade_direction_dic = {
+    "uptick": 1,
+    "zero-uptick": 1,
+    "downtick": -1,
+    "zero-downtick": -1,
+    "NaN": np.nan
+    }
+    pre_price, pre_cat = 0, 0
+    trade_cats = []
+    for p in df["Trade_Price"].values:
+        if pd.isna(p):
+            trade_cats.append("NaN")
+        else:
+            if p > pre_price:
+                trade_cats.append("uptick")
+                pre_cat = "uptick"
+            elif p < pre_price:
+                trade_cats.append("downtick")
+                pre_cat = "downtick"
+            else:
+                if pre_cat == "downtick":
+                    trade_cats.append("zero-downtick")
+                    pre_cat = "zero-downtick"
+                else:
+                    # question: what about previous one is zero-uptick?
+                    trade_cats.append("zero-uptick")
+                    pre_cat = "zero-uptick"
 
-    df["Trade_Side"] = pd.Series(np.nan, index=df.index)
-    # Look into Signing Algorithms
+            pre_price = p
+
+    trade_signs = [trade_direction_dic[c] for c in trade_cats]
+
+    df["Trade_Side"] = trade_signs
+    
     return df, ["Trade_Side"]
 
 
