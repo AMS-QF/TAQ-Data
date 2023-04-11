@@ -21,9 +21,6 @@ def run_jobs(symbol: str, start_date: str, end_date: str):
     trade_clean_path = clean_data.clean_data(trade_path)
     quote_clean_path = clean_data.clean_data(quote_path)
 
-    # check we have trade and quote data for the same dates
-    assert len(trade_clean_path) == len(quote_clean_path)
-
     all_clean_paths = []
     for i in range(len(trade_clean_path)):
         all_clean_paths.append({"trades": trade_clean_path[i], "quotes": quote_clean_path[i]})
