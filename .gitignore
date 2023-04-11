@@ -8,3 +8,4 @@ personal_research/
 HFT_Research/
 .DS_Store
 __pycache__
+scripts/__pycache__
