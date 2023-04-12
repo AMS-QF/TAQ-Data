@@ -56,10 +56,17 @@ class client_connection:
 
             command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end}"
             print(f"Trade Query for {symbol} {start} {end}")
-            self.run_command(command, keep_alive=30)
+            self.run_command(command, keep_alive=120)
 
-            # get the file from the server saving to our local directory
-            df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
+            try:
+                # get the file from the server saving to our local directory
+                df = self.conn.get(f"{self.path}/trade_results.csv", local=dir_name)
+
+                # remove file to not confuse queries
+                self.conn.run(f"rm {self.path}/trade_results.csv")
+            except:
+                print(f"No Trades data for {symbol} {start} {end}")
+                df = pd.DataFrame()
 
         return df, dir_name
 
@@ -76,10 +83,16 @@ class client_connection:
 
             command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {symbol} {start} {end}"
             print(f"Quote Query for {symbol} {start} {end}")
-            self.run_command(command, keep_alive=30)
+            self.run_command(command, keep_alive=120)
 
-            # get the file from the server saving to our local directory
-            df = self.conn.get(f"{self.path}/query_results.csv", local=dir_name)
+            try:
+                # get the file from the server saving to our local directory
+                df = self.conn.get(f"{self.path}/quote_results.csv", local=dir_name)
+                # remove file to not confuse queries
+                self.conn.run(f"rm {self.path}/quote_results.csv")
+            except:
+                print(f"No Quotes Data Found for {symbol} {start} {end}")
+                df = pd.DataFrame()
 
         return df, dir_name
 
@@ -93,6 +106,7 @@ class client_connection:
         market_days = [x.date() for x in market_days]
 
         current_dt = start
+
         path_list = []
         while current_dt < end:
 
@@ -109,7 +123,14 @@ class client_connection:
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_quotes = pd.read_csv(f"data/raw_data/temp/{symbol}_quotes.csv", low_memory=False, on_bad_lines="skip")
+            try:
+
+                day_quotes = pd.read_csv(
+                    f"data/raw_data/temp/{symbol}_quotes.csv", low_memory=False, on_bad_lines="skip"
+                )
+            except:
+                print(f"No Quotes Data Found for {symbol} on {current_dt}")
+                day_quotes = pd.DataFrame()
 
             if len(day_quotes) > 0:
                 day_quotes.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_quotes.csv")
@@ -135,6 +156,7 @@ class client_connection:
         market_days = [x.date() for x in market_days]
 
         current_dt = start
+        day_trades = pd.DataFrame()
 
         path_list = []
         while current_dt < end:
@@ -152,7 +174,13 @@ class client_connection:
             if not isExist:
                 os.makedirs(f"data/raw_data/{current_dt.date()}")
 
-            day_trades = pd.read_csv(f"data/raw_data/temp/{symbol}_trades.csv", low_memory=False, on_bad_lines="skip")
+            try:
+                day_trades = pd.read_csv(
+                    f"data/raw_data/temp/{symbol}_trades.csv", low_memory=False, on_bad_lines="skip"
+                )
+            except:
+                print(f"No Trades Data Found for {symbol} on {current_dt}")
+                day_trades = pd.DataFrame()
 
             if len(day_trades) > 0:
                 day_trades.to_csv(f"data/raw_data/{current_dt.date()}/{symbol}_trades.csv")
