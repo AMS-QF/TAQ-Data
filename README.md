@@ -1,6 +1,8 @@
 # TAQ-Query-Scripts
 Included are the client side-scripts for access to the TAQ-Clickhouse Database remotely. Functionality is also included to clean and load the data into a user-specific directory.
 
+Detailed instructions are also included in Accessing the TAQ-Clickhouse Database PDF
+
 ## Setup
 
 ### Remote Setup
