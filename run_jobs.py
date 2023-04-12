@@ -21,11 +21,12 @@ def run_jobs(symbol: str, start_date: str, end_date: str):
     trade_clean_path = clean_data.clean_data(trade_path)
     quote_clean_path = clean_data.clean_data(quote_path)
 
-    all_clean_paths = []
-    for i in range(len(trade_clean_path)):
-        all_clean_paths.append({"trades": trade_clean_path[i], "quotes": quote_clean_path[i]})
+    if len(trade_clean_path) == 0 or len(quote_clean_path) == 0:
+        print(f"Error: No data for {symbol} {start_date} {end_date}")
+        return
 
-    print(f"Files to be processed: {all_clean_paths}")
+    all_clean_paths = list(zip(sorted(trade_clean_path), sorted(quote_clean_path)))
+
     # reconstruct full book events
 
     ## TO-DO: Reconstruct book events before feature generation
