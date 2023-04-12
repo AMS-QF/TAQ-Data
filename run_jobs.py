@@ -26,7 +26,7 @@ def run_jobs(symbol: str, start_date: str, end_date: str):
         return
 
     all_clean_paths = list(zip(sorted(trade_clean_path), sorted(quote_clean_path)))
-    all_clean_paths = [{"trade": x[0], "quote": x[1]} for x in all_clean_paths]
+    all_clean_paths = [{"trades": x[0], "quotes": x[1]} for x in all_clean_paths]
 
     # reconstruct full book events
 
