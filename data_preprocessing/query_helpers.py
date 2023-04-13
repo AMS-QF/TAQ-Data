@@ -51,7 +51,7 @@ class client_connection:
         else:
             dir_name = f"data/raw_data/temp/{dir_name}/{symbol}_trades.csv"
 
-        conda_command = "source ../../opt/anaconda3/bin/activate query_user"
+        conda_command = "source anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
             command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end}"
@@ -78,7 +78,7 @@ class client_connection:
         else:
             dir_name = f"data/raw_data/temp/{dir_name}/{symbol}_quotes.csv"
 
-        conda_command = "source ../../opt/anaconda3/bin/activate query_user"
+        conda_command = "source anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
             command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {symbol} {start} {end}"
