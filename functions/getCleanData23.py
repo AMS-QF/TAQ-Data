@@ -1,8 +1,7 @@
 import getData
 import preprocessData
-import pandas as pd
-
 from sklearn.pipeline import make_pipeline
+
 
 def get_clean_data(symbol="AAPL", start_date="2021-08-03", end_date="2021-08-04"):
 
