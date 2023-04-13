@@ -1,8 +1,17 @@
 # TAQ-Query-Scripts
 Included are the client side-scripts for access to the TAQ-Clickhouse Database remotely. Functionality is also included to clean and load the data into a user-specific directory.
 
-### Setup
+Detailed instructions are also included in Accessing the TAQ-Clickhouse Database PDF
 
+## Setup
+
+### Remote Setup
+- Pull TAQNYSE-Clickhouse repo into home directory on remote server
+- Update env file with your credentials on the remote server
+- Create local conda enviroment called `query_user` with required packages (see README in TAQNYSE-Clickhouse repo)
+- Change `NAME` variable to your server username in server_helper scripts
+
+### Local Setup
 - Create a directory called `data` in the root directory of the repo
 
 - Create subdirectories called `raw_data` and `features` in the data directory of the repo
