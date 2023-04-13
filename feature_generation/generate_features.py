@@ -1,13 +1,11 @@
 import argparse
 import os
-import sys
 from typing import List, Union
 
 import pandas as pd
 
-sys.path.append("feature_generation/")
-from generators import parent_generator
-from list_features import list_features
+from feature_generation.generators import parent_generator
+from feature_generation.list_features import list_features
 
 
 def generate_features(
