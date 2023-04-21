@@ -31,6 +31,26 @@ class PreprocessData(BaseEstimator, TransformerMixin):
 
         return df
 
+    # generates individual OFI event at each quote update
+    def generate_OFI_event(self, df):
+        df["OFI_Event"] = (
+            df.Bid_Price.ge(df.Bid_Price.shift()).astype(int) * df.Bid_Size
+            - df.Bid_Price.le(df.Bid_Price.shift()).astype(int) * df.Bid_Size.shift()
+            - df.Offer_Price.le(df.Offer_Price.shift()).astype(int) * df.Offer_Size
+            + df.Offer_Price.ge(df.Offer_Price.shift()).astype(int) * df.Offer_Size.shift()
+        )
+        return df
+
+    # generates OFI over a time window (default 15s)
+    def generate_OFI(self, df, time_window="15s"):
+        df["OFI"] = df["OFI_Event"].rolling(time_window, min_periods=1).sum()
+        return df
+
+    # generates midprice at each quote update
+    def generate_midprice(self, df):
+        df["Mid_Price"] = (df["Bid_Price"] + df["Offer_Price"]) / 2
+        return df
+
     def transform(self, X):
         cols = X.columns
         if "Unnamed: 0" in cols:
@@ -83,7 +103,13 @@ class PreprocessData(BaseEstimator, TransformerMixin):
         # sort data according to index
         X = X.sort_index()
 
+        # generate mid price
+        X = self.generate_midprice(X)
+
         # assign MOX Identifiers
         X = self.generate_mox_identifier(X)
+
+        # generate OFI event
+        X = self.generate_OFI_event(X)
 
         return X
