@@ -53,6 +53,13 @@ def get_trades(query):
     ]
 
     trades = pd.DataFrame(rows, columns=columns)
+    
+    trades = trades.dropna(axis=1, how="all")
+
+    #trades = trades[trades["Trade_Volume"] > 0]
+
+    #trades = trades[trades["Trade_Price"] > 0]
+
 
     return trades
 
