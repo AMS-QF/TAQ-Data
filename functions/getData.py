@@ -1,6 +1,7 @@
 # python run_jobs.py  --symbol AAPL --start_date 2020-01-02 --end_date 2020-01-03
 import pandas as pd
 
+sys.path.append("../data_preprocessing")
 import data_preprocessing.load_data as ld
 
 

@@ -12,9 +12,12 @@ from sklearn.compose import make_column_transformer
 from sklearn.pipeline import make_pipeline
 
 warnings.filterwarnings("ignore")
+import sys
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import make_column_transformer
 
+sys.path.append("..")
 from feature_generation.generators import parent_generator
 
 
