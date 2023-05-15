@@ -1,17 +1,21 @@
-# python run_jobs.py  --symbol AAPL --start_date 2020-01-02 --end_date 2020-01-03
+import sys
+
 import pandas as pd
 
-sys.path.append("../data_preprocessing")
-import data_preprocessing.load_data as ld
+sys.path.append("../")
+
+# import functions directly
+from data_preprocessing.load_data import connect_to_db, get_quotes, get_trades
 
 
 def get_data(symbol="AAPL", start_date="2021-08-03", end_date="2021-08-04"):
-    # connect to database
-    conn = ld.connect_to_db()
+
+    # connect to database ( if you connect somewhere outside of load_data.py, you will need to pass the path to the .env file)
+    conn = connect_to_db("../../.env")
 
     # get trades and quotes data
-    pathTrades = ld.get_trades(conn, symbol, start_date, end_date)
-    pathQuotes = ld.get_quotes(conn, symbol, start_date, end_date)
+    pathTrades = get_trades(conn, symbol, start_date, end_date)
+    pathQuotes = get_quotes(conn, symbol, start_date, end_date)
 
     # initialize dataframes
     tradesDf = pd.DataFrame()
@@ -27,8 +31,3 @@ def get_data(symbol="AAPL", start_date="2021-08-03", end_date="2021-08-04"):
     dataDf = pd.concat([tradesDf, quotesDf], axis=0)
 
     return dataDf
-
-
-# if __name__ == "__main__":
-#    dataDf = get_data()
-#    print(dataDf)

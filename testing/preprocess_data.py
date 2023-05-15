@@ -1,14 +1,12 @@
-import warnings
 from datetime import timedelta
 
 import pandas as pd
-
-warnings.filterwarnings("ignore")
 from sklearn.base import BaseEstimator, TransformerMixin
 from sortedcollections import OrderedSet
 
 
-class PreprocessData(BaseEstimator, TransformerMixin):
+# class names should be nouns
+class Data_Preprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, dropped_after_hourse=True, droped_irregular_hours=True):
         self.dropped_after_hourse = dropped_after_hourse
         self.droped_irregular_hours = droped_irregular_hours

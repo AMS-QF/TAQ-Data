@@ -6,10 +6,10 @@ from fabric import Connection
 from data_preprocessing.query_helpers import client_connection
 
 
-def connect_to_db():
+def connect_to_db(path_to_env: str = ".env"):
     """Connect to the database"""
 
-    config = configobj.ConfigObj(".env")
+    config = configobj.ConfigObj(path_to_env)
     host = config["host"]
     server_user = config["server_user"]
     server_password = config["server_password"]
