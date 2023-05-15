@@ -1,9 +1,10 @@
-# sys main path and call functions from other files
+# sys main path
 import sys
 
 sys.path.append("../")
 from sklearn.pipeline import make_pipeline
 
+# import functions directly
 from testing.fetch_data import get_data
 from testing.preprocess_data import Data_Preprocessor
 
