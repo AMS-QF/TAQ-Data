@@ -9,10 +9,10 @@ from testing.fetch_data import get_data
 from testing.preprocess_data import Data_Preprocessor
 
 
-def get_clean_data(symbol="AAPL", start_date="2021-08-03", end_date="2021-08-04"):
+def get_clean_data(symbol="AAPL", start_date="2021-08-03", end_date="2021-08-04", type="trades"):
 
     # get data
-    allData = get_data(symbol, start_date, end_date)
+    allData = get_data(symbol, start_date, end_date, type)
 
     # initialize preprocessing pipeline
     process_pipeline = make_pipeline(Data_Preprocessor())
