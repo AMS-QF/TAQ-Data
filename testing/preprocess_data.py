@@ -72,13 +72,15 @@ class Data_Preprocessor(BaseEstimator, TransformerMixin):
         X = X.dropna(axis=1, how="all")
 
         # remove invalid trades
-        X.drop(X[X["Trade_Price"] < 0].index, inplace=True)
-        X.drop(X[X["Trade_Volume"] < 0].index, inplace=True)
-        X.drop(X[X["Trade_Reporting_Facility"] == "D"].index, inplace=True)
+        if "Trade_Price" in X.columns:
+            X.drop(X[X["Trade_Price"] < 0].index, inplace=True)
+            X.drop(X[X["Trade_Volume"] < 0].index, inplace=True)
+            X.drop(X[X["Trade_Reporting_Facility"] == "D"].index, inplace=True)
 
         # remove invalid quotes
-        X.drop(X[X["Bid_Price"] < 0].index, inplace=True)
-        X.drop(X[X["Offer_Price"] < X["Bid_Price"]].index, inplace=True)
+        if "Bid_Price" in X.columns:
+            X.drop(X[X["Bid_Price"] < 0].index, inplace=True)
+            X.drop(X[X["Offer_Price"] < X["Bid_Price"]].index, inplace=True)
 
         # drop after hours if specified
         if self.dropped_after_hourse:
@@ -102,12 +104,13 @@ class Data_Preprocessor(BaseEstimator, TransformerMixin):
         X = X.sort_index()
 
         # generate mid price
-        X = self.generate_midprice(X)
+        if "Bid_Price" in X.columns:
+            X = self.generate_midprice(X)
 
-        # assign MOX Identifiers
-        X = self.generate_mox_identifier(X)
+            # assign MOX Identifiers
+            X = self.generate_mox_identifier(X)
 
-        # generate OFI event
-        X = self.generate_OFI_event(X)
+            # generate OFI event
+            X = self.generate_OFI_event(X)
 
         return X
