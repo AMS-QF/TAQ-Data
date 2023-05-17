@@ -3,6 +3,7 @@ import os
 import clickhouse_connect
 from dotenv import load_dotenv
 import pandas as pd
+import numpy as np
 
 load_dotenv()  # load the contents of the .env file into the environment
 
@@ -54,14 +55,32 @@ def get_trades(query):
 
     trades = pd.DataFrame(rows, columns=columns)
     
-    trades = trades.dropna(axis=1, how="all")
-
-    #trades = trades[trades["Trade_Volume"] > 0]
-
-    #trades = trades[trades["Trade_Price"] > 0]
-
+    # Replace '\\N' with NaN in all columns
+    for col in trades.columns:
+        trades[col] = trades[col].replace('\\N', np.nan)
+    
+    # Convert the Time column to datetime
+    trades['Time'] = pd.to_datetime(trades['Time']).dt.tz_localize(None)
+    
+    # Format columns to the proper data type
+    trades['Exchange'] = trades['Exchange'].astype('str')
+    trades['Symbol'] = trades['Symbol'].astype('str')
+    trades['Trade_Volume'] = trades['Trade_Volume'].astype('int')
+    trades['Trade_Price'] = trades['Trade_Price'].astype('float')
+    trades['Trade_Stop_Stock_Indicator'] = trades['Trade_Stop_Stock_Indicator'].astype('str')
+    trades['Trade_Correction_Indicator'] = trades['Trade_Correction_Indicator'].astype('int')
+    trades['Sequence_Number'] = trades['Sequence_Number'].astype('int')
+    trades['Trade_Id'] = trades['Trade_Id'].astype('int')
+    trades['Source_of_Trade'] = trades['Source_of_Trade'].astype('str')
+    trades['Trade_Reporting_Facility'] = trades['Trade_Reporting_Facility'].astype('str')
+    trades['Participant_Timestamp'] = trades['Participant_Timestamp'].astype('float64')
+    trades['Trade_Reporting_Facility_TRF_Timestamp'] = trades['Trade_Reporting_Facility_TRF_Timestamp'].astype('float64')
+    trades['Trade_Through_Exempt_Indicator'] = trades['Trade_Through_Exempt_Indicator'].astype('int')
+    trades['Date'] = pd.to_datetime(trades['Date'])
+    trades['YearMonth'] = trades['YearMonth'].astype('str')
 
     return trades
+
 
         
 """Example Queries
