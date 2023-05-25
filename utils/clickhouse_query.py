@@ -94,49 +94,36 @@ def get_trades(query):
     return trades
 
 def get_quotes(query):
-    """Execute a SQL query and return the results as a list of dictionaries."""
-    results = client.command(query)
+    """Execute a SQL query and return the results as a pandas DataFrame."""
+    results = client.command(query)  # Assuming `client` is your ClickHouse client
 
-    # Convert the result into a pandas DataFrame
-    columns = [
-        'Time', 'Exchange', 'Symbol', 'Bid_Price', 'Bid_Size', 'Offer_Price', 'Offer_Size',
-        'Quote_Condition', 'Sequence_Number', 'National_BBO_Indicator', 'FINRA_BBO_Indicator',
-        'FINRA_ADF_MPID_Indicator', 'Quote_Cancel_Correction', 'Source_Of_Quote',
-        'Retail_Interest_Indicator', 'Short_Sale_Restriction_Indicator', 'LULD_BBO_Indicator',
-        'SIP_Generated_Message_Identifier', 'NBBO_LULD_Indicator', 'Participant_Timestamp',
-        'FINRA_ADF_Timestamp', 'FINRA_ADF_Market_Participant_Quote_Indicator',
-        'Security_Status_Indicator', 'Date', 'YearMonth'
-    ]
+    if results:
+        # Convert the result into a pandas DataFrame
+        quotes = pd.DataFrame(results, columns=results[0].keys())
 
-    quotes = pd.DataFrame(results, columns=columns)
-    
-    # Replace 'NULL' with np.nan in all columns
-    quotes.replace('NULL', np.nan, inplace=True)
-    
-    # Convert the Time column to datetime
-    quotes['Time'] = pd.to_datetime(quotes['Time']).dt.tz_localize(None)
-    
-    # Convert the 'Date' column to datetime
-    quotes['Date'] = pd.to_datetime(quotes['Date'])
-    
-    # Set the appropriate data types for numeric columns
-    numeric_cols = ['Bid_Price', 'Bid_Size', 'Offer_Price', 'Offer_Size',
-                    'National_BBO_Indicator', 'FINRA_ADF_MPID_Indicator',
-                    'FINRA_ADF_Market_Participant_Quote_Indicator']
-    for col in numeric_cols:
-        quotes[col] = pd.to_numeric(quotes[col])
-        
-    # Ensure the columns that contain string values are of type str
-    str_cols = ['Exchange', 'Symbol', 'Quote_Condition', 'Sequence_Number',
-                'FINRA_BBO_Indicator', 'Quote_Cancel_Correction', 'Source_Of_Quote',
-                'Retail_Interest_Indicator', 'Short_Sale_Restriction_Indicator', 
-                'LULD_BBO_Indicator', 'SIP_Generated_Message_Identifier', 'NBBO_LULD_Indicator',
-                'Participant_Timestamp', 'FINRA_ADF_Timestamp', 'Security_Status_Indicator',
-                'YearMonth']
-    for col in str_cols:
-        quotes[col] = quotes[col].astype(str)
+        # Replace 'NULL' with np.nan in all columns
+        quotes.replace('NULL', np.nan, inplace=True)
 
-    return quotes
+        # Convert columns to the appropriate data types
+        quotes['Time'] = pd.to_datetime(quotes['Time']).dt.tz_localize(None)
+        quotes['Date'] = pd.to_datetime(quotes['Date'])
+        numeric_cols = ['Bid_Price', 'Bid_Size', 'Offer_Price', 'Offer_Size',
+                        'National_BBO_Indicator', 'FINRA_ADF_MPID_Indicator',
+                        'FINRA_ADF_Market_Participant_Quote_Indicator']
+        quotes[numeric_cols] = quotes[numeric_cols].apply(pd.to_numeric)
+        str_cols = ['Exchange', 'Symbol', 'Quote_Condition', 'Sequence_Number',
+                    'FINRA_BBO_Indicator', 'Quote_Cancel_Correction', 'Source_Of_Quote',
+                    'Retail_Interest_Indicator', 'Short_Sale_Restriction_Indicator',
+                    'LULD_BBO_Indicator', 'SIP_Generated_Message_Identifier', 'NBBO_LULD_Indicator',
+                    'Participant_Timestamp', 'FINRA_ADF_Timestamp', 'Security_Status_Indicator',
+                    'YearMonth']
+        quotes[str_cols] = quotes[str_cols].astype(str)
+
+        return quotes
+
+    return pd.DataFrame()  # Return an empty DataFrame if no results
+
+
 
 
 """Example Query
