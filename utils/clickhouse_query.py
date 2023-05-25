@@ -73,19 +73,34 @@ def get_trades(query):
     trades['Trade_Id'] = trades['Trade_Id'].astype('int')
     trades['Source_of_Trade'] = trades['Source_of_Trade'].astype('str')
     trades['Trade_Reporting_Facility'] = trades['Trade_Reporting_Facility'].astype('str')
-    trades['Participant_Timestamp'] = trades['Participant_Timestamp'].astype('float64')
+    trades['Participant_Timestamp'] = trades['Participant_Timestamp'].astype('int64')
     trades['Trade_Reporting_Facility_TRF_Timestamp'] = trades['Trade_Reporting_Facility_TRF_Timestamp'].astype('float64')
     trades['Trade_Through_Exempt_Indicator'] = trades['Trade_Through_Exempt_Indicator'].astype('int')
     trades['Date'] = pd.to_datetime(trades['Date'])
     trades['YearMonth'] = trades['YearMonth'].astype('str')
 
+    trades['Participant_Timestamp'] = pd.to_datetime(trades['Participant_Timestamp'], format='%H%M%S%f').dt.time
+
+    # Ensure "Date" column is in datetime format
+    trades['Date'] = pd.to_datetime(trades['Date'])
+
+    # Ensure "Participant_Timestamp" is of type str
+    trades['Participant_Timestamp'] = trades['Participant_Timestamp'].astype(str)
+
+    # Create new datetime column "DateTime"
+    trades['DateTime'] = pd.to_datetime(trades['Date'].dt.strftime('%Y-%m-%d') + ' ' + trades['Participant_Timestamp'])
+
+
     return trades
 
-
-        
 """Example Queries
 
 # select apple trades from January of 2017 to April of 2017
 query = "SELECT * FROM TRADESDB.trades2017view WHERE (Symbol = 'AAPL') AND (Date = '2017-01-05')"
 
 """
+
+
+
+    
+
