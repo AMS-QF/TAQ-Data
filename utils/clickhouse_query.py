@@ -93,10 +93,75 @@ def get_trades(query):
 
     return trades
 
-"""Example Queries
+def get_quotes(query):
+    """Execute a SQL query and return the results as a list of dictionaries."""
+    results = client.command(query)
 
-# select apple trades from January of 2017 to April of 2017
-query = "SELECT * FROM TRADESDB.trades2017view WHERE (Symbol = 'AAPL') AND (Date = '2017-01-05')"
+    # Convert the result into a pandas DataFrame
+    columns = [
+        'Time', 'Exchange', 'Symbol', 'Bid_Price', 'Bid_Size', 'Offer_Price', 'Offer_Size',
+        'Quote_Condition', 'Sequence_Number', 'National_BBO_Indicator', 'FINRA_BBO_Indicator',
+        'FINRA_ADF_MPID_Indicator', 'Quote_Cancel_Correction', 'Source_Of_Quote',
+        'Retail_Interest_Indicator', 'Short_Sale_Restriction_Indicator', 'LULD_BBO_Indicator',
+        'SIP_Generated_Message_Identifier', 'NBBO_LULD_Indicator', 'Participant_Timestamp',
+        'FINRA_ADF_Timestamp', 'FINRA_ADF_Market_Participant_Quote_Indicator',
+        'Security_Status_Indicator', 'Date', 'YearMonth'
+    ]
+
+    quotes = pd.DataFrame(results, columns=columns)
+    
+    # Replace 'NULL' with np.nan in all columns
+    quotes.replace('NULL', np.nan, inplace=True)
+    
+    # Convert the Time column to datetime
+    quotes['Time'] = pd.to_datetime(quotes['Time']).dt.tz_localize(None)
+    
+    # Convert the 'Date' column to datetime
+    quotes['Date'] = pd.to_datetime(quotes['Date'])
+    
+    # Set the appropriate data types for numeric columns
+    numeric_cols = ['Bid_Price', 'Bid_Size', 'Offer_Price', 'Offer_Size',
+                    'National_BBO_Indicator', 'FINRA_ADF_MPID_Indicator',
+                    'FINRA_ADF_Market_Participant_Quote_Indicator']
+    for col in numeric_cols:
+        quotes[col] = pd.to_numeric(quotes[col])
+        
+    # Ensure the columns that contain string values are of type str
+    str_cols = ['Exchange', 'Symbol', 'Quote_Condition', 'Sequence_Number',
+                'FINRA_BBO_Indicator', 'Quote_Cancel_Correction', 'Source_Of_Quote',
+                'Retail_Interest_Indicator', 'Short_Sale_Restriction_Indicator', 
+                'LULD_BBO_Indicator', 'SIP_Generated_Message_Identifier', 'NBBO_LULD_Indicator',
+                'Participant_Timestamp', 'FINRA_ADF_Timestamp', 'Security_Status_Indicator',
+                'YearMonth']
+    for col in str_cols:
+        quotes[col] = quotes[col].astype(str)
+
+    return quotes
+
+
+"""Example Query
+
+# import helper functions
+from utils.clickhouse_query import *
+
+# Note - there is restriction to 1,000,000 rows per day/per user - so it's wise to limit the query to a specific time range for testing purposes - aggregation can also be used to reduce the number of rows returned
+# Here is a way to restrict the query to a specific time range
+start_hour = 9
+end_hour = 10
+
+# Define the query - this query grabs trades data from AAPL on 2017-01-05 between 9am and 11am
+query = f'''
+    SELECT * 
+    FROM TRADESDB.trades2017view 
+    WHERE (Symbol = 'AAPL') 
+    AND (Date = '2017-01-05') 
+    AND (toHour(Time) BETWEEN {start_hour} AND {end_hour})
+    AND Trade_Volume > 0
+    AND Trade_Price > 0
+'''
+
+# Execute the query and store the resulting dataframe
+data = get_trades(query)
 
 """
 
