@@ -77,24 +77,6 @@ def generate_imbalance(df: pd.DataFrame) -> pd.DataFrame:
 #     return df, list(column_dict.keys())
 
 
-def generate_mox_identifier(df: pd.DataFrame) -> pd.DataFrame:
-    """Generate MOX Identifier"""
-
-    df_copy = df.copy()
-    df_copy.index = pd.to_datetime(df_copy.index)
-
-    # round the index to the nearest millisecond
-    grouped_df = df_copy.groupby(df_copy.index.map(lambda t: t.round("1us")))
-
-    # assign a unique identifier to each group
-    for i, (name, group) in enumerate(grouped_df):
-        df_copy.loc[group.index, "MOX_Identifier"] = i
-
-    df["MOX_Identifier"] = df_copy["MOX_Identifier"].values
-
-    return df, ["MOX_Identifier"]
-
-
 def generate_price_impact(df: pd.DataFrame) -> pd.DataFrame:
 
     df["Price_Impact"] = pd.Series(np.nan, index=df.index)
@@ -119,7 +101,6 @@ def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame
         "Imbalance_Weighted_Effective_Spread": generate_imbalance_weighted_effective_spread,
         "Midprice": generate_midprice,
         "Microprice": generate_microprice,
-        "Trade_Side": generate_trade_side,
         # "Prevailing_NBBO": generate_prevailing_nbbo,
         "MOX_Identifier": generate_mox_identifier,
         "Price_Impact": generate_price_impact,
