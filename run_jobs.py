@@ -8,16 +8,18 @@ from pipelines import event_reconstruction
 
 
 def run_jobs(symbol: str, start_date: str, end_date: str):
+    """Run all jobs for a given symbol and date range"""
 
     # connect to database
     conn = load_data.connect_to_db()
 
     # load data
+    ref_path = load_data.get_ref_data(conn, symbol, start_date, end_date)
     trade_path = load_data.get_trades(conn, symbol, start_date, end_date)
     quote_path = load_data.get_quotes(conn, symbol, start_date, end_date)
 
     # clean data
-
+    ref_clean_path = clean_data.clean_data(ref_path)
     trade_clean_path = clean_data.clean_data(trade_path)
     quote_clean_path = clean_data.clean_data(quote_path)
 
@@ -25,8 +27,8 @@ def run_jobs(symbol: str, start_date: str, end_date: str):
     assert len(trade_clean_path) == len(quote_clean_path)
 
     all_clean_paths = []
-    for i in range(len(trade_clean_path)):
-        all_clean_paths.append({"trades": trade_clean_path[i], "quotes": quote_clean_path[i]})
+    for i, path in enumerate(trade_clean_path):
+        all_clean_paths.append({"trades": trade_clean_path[i], "quotes": quote_clean_path[i], "ref": ref_clean_path[i]})
 
     print(f"Files to be processed: {all_clean_paths}")
     # reconstruct full book events
