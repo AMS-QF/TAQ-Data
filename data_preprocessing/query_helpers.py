@@ -16,7 +16,7 @@ class client_connection:
 
     """
 
-    def __init__(self, host, username, password, user_username, user_password, limit=10e6):
+    def __init__(self, host, username, password, user_username, user_password, limit=100000):
         self.host = host
         self.router_username = username
         self.router_password = password
