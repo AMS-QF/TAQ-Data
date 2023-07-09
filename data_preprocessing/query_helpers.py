@@ -16,12 +16,16 @@ class client_connection:
 
     """
 
-    def __init__(self, host, username, password, user_username, user_password):
+    def __init__(self, host, username, password, user_username, user_password, limit=10e6):
         self.host = host
         self.router_username = username
         self.router_password = password
 
         self.path = "TAQNYSE-Clickhouse"
+
+        # limit parameter for clickhouse queries
+        assert type(limit) == int, "limit must be an integer"
+        self.limit = limit
 
         self.user_username = user_username
         self.user_password = user_password
@@ -53,7 +57,7 @@ class client_connection:
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
 
-            command = f" python3 {self.path}/server_helpers/refdata_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end}"
+            command = f" python3 {self.path}/server_helpers/refdata_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end} {self.limit}"
             print(f"Ref Query for {symbol} {start} {end}")
             self.run_command(command, keep_alive=30)
 
@@ -72,7 +76,7 @@ class client_connection:
 
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
-            command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end}"
+            command = f" python3 {self.path}/server_helpers/trade_server_helpers.py {self.user_username} {self.user_password}  {symbol} {start} {end} {self.limit}"
             print(f"Trade Query for {symbol} {start} {end}")
             self.run_command(command, keep_alive=30)
 
@@ -91,7 +95,7 @@ class client_connection:
 
         conda_command = "source ../../opt/anaconda3/bin/activate query_user"
         with self.conn.prefix(conda_command):
-            command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {symbol} {start} {end}"
+            command = f" python3 {self.path}/server_helpers/quote_server_helpers.py {self.user_username} {self.user_password} {symbol} {start} {end} {self.limit}"
             print(f"Quote Query for {symbol} {start} {end}")
             self.run_command(command, keep_alive=30)
 
