@@ -138,6 +138,8 @@ def generate_trade_side(trade_prices):
     return trade_signs
 
 
+# ---------------------- Calendar & Transaction Mode -------------------------------------------------------
+
 def generateVolumeAll(df, M = 'calendar'):
     """
     Generate the VolumeAll feature for the dataframe.
@@ -421,6 +423,192 @@ def generatePriceMax(df, M='calendar'):
             df[pMaxsT[i]] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2-delta1).max()
 
     return df
+
+# -------------------------------- Volume Mode -----------------------------------------------------------------
+
+def generate_volume_span(span, trade_volumes):
+    """
+    Generate volume spans for the given trade volumes.
+
+    This function calculates the volume spans for the provided trade volumes using a sliding window approach.
+    A volume span represents the index (position) in the trade volumes list, from which the cumulative sum of volumes
+    reaches or exceeds the specified `span` value.
+
+    Parameters:
+    ----------
+    span : int
+        The target sum of volumes to be reached.
+    trade_volumes : list
+        A list of trade volumes (integers) for which the volume spans need to be calculated.
+
+    Returns:
+    -------
+    list
+        A list containing the volume spans for the trade volumes.
+
+    """
+    volume_spans = []
+    for idx, val in enumerate(trade_volumes):
+        cur = max(idx - 1, 0)
+        # Sliding window to find the volume span
+        while cur >= 0:
+            if cur == 0:
+                volume_spans.append(0)
+                break
+            if sum(trade_volumes[cur:idx + 1]) >= span:
+                volume_spans.append(cur + 1)
+                break
+            cur -= 1
+
+    return volume_spans
+
+
+
+def generate_vol_lambda(df, preIdxCol, curIdxCol, volumeAll):
+    """
+    Generate volume lambda values for trades in the given DataFrame.
+
+    This function calculates the volume lambda values for trades in the provided DataFrame (`df`).
+    The calculation is based on the specified columns representing the previous index, current index,
+    and the total volume (trade volume) for each trade.
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing the data.
+    preIdxCol : str
+        Column name representing the previous index of the trade in the DataFrame.
+    curIdxCol : str
+        Column name representing the current index of the trade in the DataFrame.
+    volumeAll : str
+        Column containing the corresponding VolumeAll for each trade in the DataFrame.
+
+    Returns:
+    -------
+    list
+        A list containing the volume lambda values for trades.
+
+    """
+    vol_Lambda = []
+    for i in df.index:
+        if df.iloc[i]['Is_Quote']:
+            vol_Lambda.append(np.nan)
+            continue
+        pre = df.iloc[i][preIdxCol]
+        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
+        p_min, p_max = df.iloc[pre:cur + 1]['Trade_Price'].min(), df.iloc[pre:cur + 1]['Trade_Price'].max()
+        vol_Lambda.append((p_max - p_min) / df.iloc[i][volumeAll])
+
+    return vol_Lambda
+
+    
+    
+def generate_vol_lobImbalance(df, preIdxCol, curIdxCol):
+    """
+    Generate volume LOB imbalance values for trades in the given DataFrame.
+
+    This function calculates the volume LOB imbalance values for trades in the provided DataFrame (`df`).
+    The calculation is based on the specified columns representing the previous index and current index of each trade.
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing the data.
+    preIdxCol : str
+        Column name representing the previous index of the trade in the DataFrame.
+    curIdxCol : str
+        Column name representing the current index of the trade in the DataFrame.
+
+    Returns:
+    -------
+    list
+        A list containing the volume LOB imbalance values for trades.
+
+    """
+    vol_LobImbalance = []
+    for i in df.index:
+        pre = df.iloc[i][preIdxCol]
+        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
+        vol_LobImbalance.append(df.iloc[pre:cur + 1]['Imbalance'].mean())
+
+    return vol_LobImbalance
+
+
+def generate_vol_txnImbalance(df, preIdxCol, curIdxCol, volumeAll):
+    """
+    Generate volume transaction imbalance values for trades in the given DataFrame.
+
+    This function calculates the volume transaction imbalance values for trades in the provided DataFrame (`df`).
+    The calculation is based on the specified columns representing the previous index, current index,
+    and the total volume (trade volume) for each trade.
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing the data.
+    preIdxCol : str
+        Column name representing the previous index of the trade in the DataFrame.
+    curIdxCol : str
+        Column name representing the current index of the trade in the DataFrame.
+    volumeAll : str
+        Column containing the corresponding VolumeAll for each trade in the DataFrame.
+
+    Returns:
+    -------
+    list
+        A list containing the volume transaction imbalance values for trades.
+
+    """
+    vol_TxnImbalance = []
+    for i in df.index:
+        if df.iloc[i]['Is_Quote']:
+            vol_TxnImbalance.append(np.nan)
+            continue
+        pre = df.iloc[i][preIdxCol]
+        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
+        sum_vt_dir = df.iloc[pre:cur + 1]['Vt_Dir'].sum()
+        vol_TxnImbalance.append(sum_vt_dir / df.iloc[i][volumeAll])
+
+    return vol_TxnImbalance
+
+
+    
+def generate_vol_pastReturn(df, preIdxCol, curIdxCol):
+    """
+    Generate volume past return values for trades in the given DataFrame.
+
+    This function calculates the volume past return values for trades in the provided DataFrame (`df`).
+    The calculation is based on the specified columns representing the previous index and current index of each trade.
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing the data.
+    preIdxCol : str
+        Column name representing the previous index of the trade in the DataFrame.
+    curIdxCol : str
+        Column name representing the current index of the trade in the DataFrame.
+
+    Returns:
+    -------
+    list
+        A list containing the volume past return values for trades.
+
+    """
+    vol_PastReturn = []
+    for i in df.index:
+        if df.iloc[i]['Is_Quote']:
+            vol_PastReturn.append(np.nan)
+            continue
+        pre = df.iloc[i][preIdxCol]
+        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
+        p_max = df.iloc[pre:cur + 1]['Trade_Price'].max()
+        p_avg = df.iloc[pre:cur + 1]['Trade_Price'].mean()
+        vol_PastReturn.append(1 - p_avg / p_max)
+
+    return vol_PastReturn
+
+
 
 
 if __name__ == "__main__":
