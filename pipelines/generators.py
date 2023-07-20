@@ -168,7 +168,7 @@ def generateVolumeAll(df, M = 'calendar'):
     if M == 'transaction':
         for i in range(len(transaction_spreads)):       
             delta1, delta2 = transaction_spreads[i][0], transaction_spreads[i][1]
-            df[volumeAllsT[i]] = df[df['Is_Quote'] == False]['Trade_Volume'].shift(delta1).rolling(delta2).sum()
+            df[volumeAllsT[i]] = df[df['Is_Quote'] == False]['Trade_Volume'].shift(delta1).rolling(delta2-delta1).sum()
     
     
     return df
@@ -207,8 +207,8 @@ def generatePriceDiff(df, M = 'calendar'):
     if M == 'transaction':
         for i in range(len(transaction_spreads)):
             delta1, delta2 = transaction_spreads[i][0], transaction_spreads[i][1]
-            df['maxPrix'] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2).max()
-            df['minPrix'] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2).min()
+            df['maxPrix'] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2-delta1).max()
+            df['minPrix'] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2-delta1).min()
             df[priceDiffsT[i]] = df['maxPrix'] - df['minPrix']
 
 
@@ -311,7 +311,7 @@ def generateTxnVtDir(df, M = 'calendar'):
     if M == 'transaction':
         for i in range(len(transaction_spreads)):
             delta1, delta2 = transaction_spreads[i][0], transaction_spreads[i][1]
-            df[txnVtDirsT[i]] = df[df['Is_Quote'] == False]['Vt_Dir'].shift(delta1).rolling(delta2).sum()
+            df[txnVtDirsT[i]] = df[df['Is_Quote'] == False]['Vt_Dir'].shift(delta1).rolling(delta2-delta1).sum()
 
     return df
 
@@ -380,7 +380,7 @@ def generateAvgReturn(df, M='calendar'):
     if M == 'transaction':
         for i in range(len(transaction_spreads)):
             delta1, delta2 = transaction_spreads[i][0], transaction_spreads[i][1]
-            df[avgReturnsT[i]] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2).mean()
+            df[avgReturnsT[i]] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2-delta1).mean()
 
     return df
 
@@ -418,7 +418,7 @@ def generatePriceMax(df, M='calendar'):
     if M == 'transaction':
         for i in range(len(transaction_spreads)):
             delta1, delta2 = transaction_spreads[i][0], transaction_spreads[i][1]
-            df[pMaxsT[i]] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2).max()
+            df[pMaxsT[i]] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2-delta1).max()
 
     return df
 
