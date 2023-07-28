@@ -4,6 +4,11 @@ data_preprocessing/__pycache__
 .env
 feature_generation/__pycache__/
 pipelines/__pycache__/
+<<<<<<< HEAD
 personal_research/
 HFT_Research/
 .DS_Store
+=======
+.DS_Store
+pipelines/testData/
+>>>>>>> mike_get_data

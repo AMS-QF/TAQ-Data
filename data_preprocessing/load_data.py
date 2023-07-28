@@ -3,7 +3,7 @@ import argparse
 import configobj
 from fabric import Connection
 
-from data_preprocessing.query_helpers import client_connection
+from query_helpers import client_connection
 
 
 def connect_to_db():
