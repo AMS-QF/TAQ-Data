@@ -1,6 +1,7 @@
 .ipynb_checkpoints/
 data/
 data_preprocessing/__pycache__
+pipelines\data
 .env
 feature_generation/__pycache__/
 pipelines/__pycache__/
