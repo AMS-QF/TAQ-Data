@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from data_preprocessing.get_data import get_quotes, get_trades
+from data_preprocessing.get_data import get_quotes, get_reference_data, get_trades
 
 
 def run_jobs(symbol: str, start_date: str, end_date: str, row_limit=1000000):
@@ -24,7 +24,7 @@ def run_jobs(symbol: str, start_date: str, end_date: str, row_limit=1000000):
     # To-DO: create get-reference-data function
 
     # load data
-    # get_ref_data(symbol, start_date, end_date,row_limit)
+    get_reference_data(symbol, start_date, end_date, row_limit)
     get_trades(symbol, start_date, end_date, row_limit)
     get_quotes(symbol, start_date, end_date, row_limit)
 
@@ -34,9 +34,6 @@ def run_jobs(symbol: str, start_date: str, end_date: str, row_limit=1000000):
     # ref_clean_path = clean_data.clean_data(ref_path)
     # trade_clean_path = clean_data.clean_data(trade_path)
     # quote_clean_path = clean_data.clean_data(quote_path)
-
-    # # check we have trade and quote data for the same dates
-    # assert len(trade_clean_path) == len(quote_clean_path)
 
     # all_clean_paths = []
     # for i, path in enumerate(trade_clean_path):
