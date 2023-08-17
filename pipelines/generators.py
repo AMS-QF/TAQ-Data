@@ -118,6 +118,18 @@ def generate_trade_side(trade_prices):
     return trade_signs
 
 
+def generate_transaction_return(df, span, mode='calendar'):
+    
+    if mode == 'calendar':
+        avgPrice = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].apply(lambda t:
+            df[df['Participant_Timestamp_f'].between(t, t+span, inclusive='neither')]['Trade_Price'].mean()
+        )
+    else:
+        avgPrice = None
+    return avgPrice / df['Trade_Price'] - 1
+
+
+
 # ---------------------- Calendar Mode -------------------------------------------------------
 def generate_cal_VolumeAll(df, delta1, delta2):
     """
@@ -139,47 +151,61 @@ def generate_cal_VolumeAll(df, delta1, delta2):
     -------
     pandas.Series
         A pandas Series containing the calculated calendar VolumeAll values.
-
     """
     return df['Participant_Timestamp_f'].apply(lambda t: sum(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Volume']))
 
 
-def generate_cal_Lambda(df, delta1, delta2, volumeAll):
+def generate_cal_Lambda(df, delta1, delta2):
     """
-    Generate calendar Lambda values for trades in the given DataFrame.
-
-    This function calculates the calendar Lambda values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified time deltas `delta1` and `delta2`.
+    Calculates the Lambda value for each trade in the given dataframe based on price differences
+    within a specified time window and the corresponding volume.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    delta1 : pandas.Timedelta
-        The first time delta (offset) to calculate the time window.
-    delta2 : pandas.Timedelta
-        The second time delta (offset) to calculate the time window.
-    volumeAll : pandas.Series
-        A pandas Series representing the volume for each trade.
+        The dataframe containing trade and quote data.
+    delta1 : float
+        The start time for the time window.
+    delta2 : float
+        The end time for the time window.
 
     Returns:
     -------
     pandas.Series
-        A pandas Series containing the calculated calendar Lambda values.
+        A pandas series containing the Lambda values for each trade.
+
+    Raises:
+    ------
+    ValueError:
+        If the required VolumeAll column (based on delta1, delta2) is not found in df.
     """
+    
+    # Selecting only the rows where 'Is_Quote' is False i.e., trades
+    trades_df = df[df['Is_Quote'] == False]
+
     # Calculate the maximum trade price for each trade within the specified time window
-    p_max = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].apply(
-        lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan))
+    p_max = trades_df['Participant_Timestamp_f'].apply(
+        lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan)
+    )
 
     # Calculate the minimum trade price for each trade within the specified time window
-    p_min = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].apply(
-        lambda t: min(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan))
+    p_min = trades_df['Participant_Timestamp_f'].apply(
+        lambda t: min(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan)
+    )
 
     # Calculate the price difference (p_max - p_min) for each trade
     p_diff = p_max - p_min
+    
+    try:
+        # Generate the name of the volume column based on the given deltas
+        volumeAll = df[feature_name_generator('VolumeAll', delta1, delta2)]
 
-    # Calculate the Lambda value for each trade by dividing the price difference by the volume (volumeAll)
-    return p_diff / volumeAll
+        # Calculate the Lambda value for each trade by dividing the price difference by the volume (volumeAll)
+        return p_diff / volumeAll
+
+    except KeyError:
+        raise ValueError('VolumeAll not defined')
+
 
 
 def generate_cal_LobImbalance(df, delta1, delta2):
@@ -213,38 +239,49 @@ def generate_cal_LobImbalance(df, delta1, delta2):
     )
 
 
-def generate_cal_TxnImbalance(df, delta1, delta2, volumeAll):
+def generate_cal_TxnImbalance(df, delta1, delta2):
     """
-    Generate calendar TxnImbalance values for trades in the given DataFrame.
-
-    This function calculates the calendar TxnImbalance values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified time deltas `delta1` and `delta2`.
+    Calculates the Lambda value for each trade in the given dataframe based on price differences
+    within a specified time window and the corresponding volume.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    delta1 : pandas.Timedelta
-        The first time delta (offset) to calculate the time window.
-    delta2 : pandas.Timedelta
-        The second time delta (offset) to calculate the time window.
-    volumeAll : pandas.Series
-        A pandas Series representing the volume for each trade.
+        The dataframe containing trade and quote data.
+    delta1 : float
+        The start time for the time window.
+    delta2 : float
+        The end time for the time window.
 
     Returns:
     -------
     pandas.Series
-        A pandas Series containing the calculated calendar TxnImbalance values.
+        A pandas series containing the Lambda values for each trade.
+
+    Raises:
+    ------
+    ValueError:
+        If the required VolumeAll column (based on delta1, delta2) is not found in df.
     """
     # Calculate the transaction imbalance for each trade and store it in the 'Vt_Dir' column
     df['Vt_Dir'] = df['Trade_Volume'] * df['Trade_Sign']
 
     # Calculate the sum of transaction imbalances within the specified time window for each trade timestamp
-    return df['Participant_Timestamp_f'].apply(
+    sum_Vt_Dir = df['Participant_Timestamp_f'].apply(
         lambda t: sum(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Vt_Dir'])
     )
+    
+    try:
+        # Generate the name of the volume column based on the given deltas
+        volumeAll = df[feature_name_generator('VolumeAll', delta1, delta2)]
 
+        # Calculate the Lambda value for each trade by dividing the price difference by the volume (volumeAll)
+        return sum_Vt_Dir / volumeAll
 
+    except KeyError:
+        raise ValueError('VolumeAll not defined')
+
+        
 def generate_cal_PastReturn(df, delta1, delta2):
     """
     Generate calendar PastReturn values for trades in the given DataFrame.
@@ -416,43 +453,6 @@ def generate_trans_TxnImbalance(df, delta1, delta2, volumeAll):
 
     # Calculate the TxnImbalance value for each trade by dividing the rolling sum (`vt_dir`) by `volumeAll` for each trade
     return vt_dir / volumeAll
-
-
-
-def generateAvgReturn(df, M='calendar'):
-    """
-    Generate average return values for trades in the given DataFrame.
-
-    This function calculates the average return values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified method (`M`).
-
-    Parameters:
-    ----------
-    df : pandas.DataFrame
-        DataFrame containing the data.
-    M : str, optional
-        Method for average return calculation. Default is 'calendar'.
-
-    Returns:
-    -------
-    pandas.DataFrame
-        DataFrame with the added average return values for trades.
-
-    """
-    if M == 'calendar':
-        for i in range(len(calendar_spreads)):
-            delta1, delta2 = calendar_spreads[i][0], calendar_spreads[i][1]
-            df[avgReturns[i]] = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].apply(
-                lambda t: df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')][
-                    'Trade_Price'].mean()
-            )
-    
-    if M == 'transaction':
-        for i in range(len(transaction_spreads)):
-            delta1, delta2 = transaction_spreads[i][0], transaction_spreads[i][1]
-            df[avgReturnsT[i]] = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1).rolling(delta2-delta1).mean()
-
-    return df
 
 
 def generate_trans_PastReturn(df, delta1, delta2):
