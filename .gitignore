@@ -7,3 +7,4 @@ pipelines/__pycache__/
 .DS_Store
 pipelines/testData/
 personal_research
+pipelines/data
