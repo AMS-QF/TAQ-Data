@@ -118,6 +118,10 @@ def generate_trade_side(trade_prices):
     return trade_signs
 
 
+
+
+# -------------------------------------------------------------------------------------------
+
 def generate_transaction_return(df, span, mode='calendar'):
     
     if mode == 'calendar':
@@ -128,6 +132,9 @@ def generate_transaction_return(df, span, mode='calendar'):
         avgPrice = None
     return avgPrice / df['Trade_Price'] - 1
 
+
+def feature_name_generator(feature_name: str, delta1: float, delta2: float) -> str:
+    return feature_name + '_' + str(delta1) + '_' + str(delta2)
 
 
 # ---------------------- Calendar Mode -------------------------------------------------------
@@ -347,12 +354,12 @@ def generate_trans_VolumeAll(df, delta1, delta2):
     return shifted_trade_volume.rolling(delta2 - delta1).sum()
 
 
-def generate_trans_Lambda(df, delta1, delta2, volumeAll):
+def generate_trans_Lambda(df, delta1, delta2):
     """
     Generate transaction Lambda values for trades in the given DataFrame.
 
-    This function calculates the transaction Lambda values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified time deltas `delta1` and `delta2`.
+    This function calculates the transaction Lambda values for trades based on the difference 
+    between rolling maximum and minimum trade prices within a defined window and the corresponding volume.
 
     Parameters:
     ----------
@@ -362,64 +369,95 @@ def generate_trans_Lambda(df, delta1, delta2, volumeAll):
         The first time delta (offset) to calculate the start of the rolling window.
     delta2 : pandas.Timedelta
         The second time delta (offset) to calculate the end of the rolling window.
-    volumeAll : pandas.Series
-        A pandas Series representing the volume for each trade.
 
     Returns:
     -------
     pandas.Series
         A pandas Series containing the calculated transaction Lambda values.
+
+    Raises:
+    ------
+    ValueError:
+        If the required VolumeAll column (based on delta1, delta2) is not found in df.
     """
+
+    # Filter the DataFrame to select only trades, not quotes
+    trades_df = df[df['Is_Quote'] == False]
+
     # Shift 'Trade_Price' column by `delta1` time offset
-    shifted_trade_price = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1)
+    shifted_trade_price = trades_df['Trade_Price'].shift(delta1)
 
-    # Calculate the rolling maximum of the shifted trade prices within the window defined by `delta2-delta1`
+    # Calculate the rolling maximum and minimum of the shifted trade prices within the window defined by `delta2-delta1`
     p_max = shifted_trade_price.rolling(delta2 - delta1).max()
-
-    # Calculate the rolling minimum of the shifted trade prices within the window defined by `delta2-delta1`
     p_min = shifted_trade_price.rolling(delta2 - delta1).min()
 
     # Calculate the price difference (p_max - p_min) for each trade
     p_diff = p_max - p_min
+    
+    try:
+        # Generate the name of the volume column based on the given deltas using the assumed feature_name_generator function
+        volumeAll = df[feature_name_generator('VolumeAll', delta1, delta2)]
+        
+        # Calculate the Lambda value for each trade by dividing the price difference by the volume (volumeAll)
+        return p_diff / volumeAll
 
-    # Calculate the Lambda value for each trade by dividing the price difference by the volume (volumeAll) for each trade
-    return p_diff / volumeAll
+    except KeyError:
+        raise ValueError('VolumeAll column not found in DataFrame.')
 
 
-def generate_trans_TxnImbalance(df, delta1, delta2, volumeAll):
+
+def generate_trans_LobImbalance(df, delta1, delta2):
     """
-    Generate transaction TxnImbalance values for trades in the given DataFrame.
+    Generate transaction LOB imbalance values for trades in the given DataFrame.
 
-    This function calculates the transaction TxnImbalance values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified time deltas `delta1` and `delta2`.
+    This function calculates the LOB imbalance values based on the difference between the offer 
+    and bid sizes, normalized by their sum, for trades in the provided DataFrame (`df`). 
+    The calculation window is based on the specified time deltas `delta1` and `delta2`.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    delta1 : pandas.Timedelta
-        The first time delta (offset) to calculate the start of the rolling window.
-    delta2 : pandas.Timedelta
-        The second time delta (offset) to calculate the end of the rolling window.
-    volumeAll : pandas.Series
-        A pandas Series representing the volume for each trade.
+        DataFrame containing the data with columns: Offer_Size, Bid_Size, Is_Quote, 
+        and Participant_Timestamp_f.
+    delta1 : int
+        The first time delta (offset) to define the start of the computation window.
+    delta2 : int
+        The second time delta (offset) to define the end of the computation window.
 
     Returns:
     -------
-    pandas.Series
-        A pandas Series containing the calculated transaction TxnImbalance values.
+    list
+        A list containing the calculated LOB imbalance values.
     """
-    # Calculate the transaction imbalance for each trade and store it in the 'Vt_Dir' column
-    df['Vt_Dir'] = df['Trade_Volume'] * df['Trade_Sign']
 
-    # Shift the 'Vt_Dir' column by `delta1` time offset
-    shifted_vt_dir = df[df['Is_Quote'] == False]['Vt_Dir'].shift(delta1)
+    # Calculate the LOB imbalance for each row
+    df['Imbalance'] = (df['Offer_Size'] - df['Bid_Size']) / (df['Offer_Size'] + df['Bid_Size'])
 
-    # Calculate the rolling sum of the shifted transaction imbalances within the window defined by `delta2-delta1`
-    return shifted_vt_dir.rolling(delta2 - delta1).sum()
+    # Container for the resulting LOB imbalance values
+    lobImbalance = []
+
+    # Iterate over the DataFrame's indices
+    for i in df.index:
+
+        # If the current row is a quote, append NaN to the results and continue
+        if df.iloc[i]['Is_Quote']:
+            lobImbalance.append(np.nan)
+            continue
+
+        # Define the start and end timestamps of the computation window
+        t1 = df[df['Is_Quote'] == False].shift(delta1)['Participant_Timestamp_f'][i]
+        t2 = df[df['Is_Quote'] == False].shift(delta2)['Participant_Timestamp_f'][i]
+
+        # Calculate the mean LOB imbalance within the defined window
+        val = df[df['Participant_Timestamp_f'].between(t2, t1, inclusive='right')]['Imbalance'].mean()
+        
+        # Append the calculated value to the results
+        lobImbalance.append(val)
+
+    return lobImbalance
 
 
-def generate_trans_TxnImbalance(df, delta1, delta2, volumeAll):
+def generate_trans_TxnImbalance(df, delta1, delta2):
     """
     Generate transaction TxnImbalance values for trades in the given DataFrame.
 
@@ -434,9 +472,7 @@ def generate_trans_TxnImbalance(df, delta1, delta2, volumeAll):
         The first time delta (offset) to calculate the start of the rolling window.
     delta2 : pandas.Timedelta
         The second time delta (offset) to calculate the end of the rolling window.
-    volumeAll : pandas.Series
-        A pandas Series representing the volume for each trade.
-
+  
     Returns:
     -------
     pandas.Series
@@ -450,11 +486,18 @@ def generate_trans_TxnImbalance(df, delta1, delta2, volumeAll):
 
     # Calculate the rolling sum of the shifted transaction imbalances within the window defined by `delta2-delta1`
     vt_dir = shifted_vt_dir.rolling(delta2 - delta1).sum()
+    
+    try:
+        # Generate the name of the volume column based on the given deltas using the assumed feature_name_generator function
+        volumeAll = df[feature_name_generator('VolumeAll', delta1, delta2)]
+        
+        # Calculate the TxnImbalance value for each trade by dividing the price difference by the volume (volumeAll)
+        return vt_dir / volumeAll 
 
-    # Calculate the TxnImbalance value for each trade by dividing the rolling sum (`vt_dir`) by `volumeAll` for each trade
-    return vt_dir / volumeAll
+    except KeyError:
+        raise ValueError('VolumeAll column not found in DataFrame.')
 
-
+        
 def generate_trans_PastReturn(df, delta1, delta2):
     """
     Generate transaction PastReturn values for trades in the given DataFrame.
