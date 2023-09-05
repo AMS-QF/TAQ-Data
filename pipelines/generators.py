@@ -120,7 +120,7 @@ def generate_trade_side(trade_prices):
 
 
 
-# -------------------------------------------------------------------------------------------
+# --------------------------------Helper Function -----------------------------------------------
 
 def generate_transaction_return(df, span, mode='calendar'):
     
@@ -132,11 +132,42 @@ def generate_transaction_return(df, span, mode='calendar'):
         avgPrice = None
     return avgPrice / df['Trade_Price'] - 1
 
+def feature_name_generator(feature_name: str, delta1: float, delta2: float = None) -> str:
+    """
+    Generate a standardized feature name based on the provided inputs.
 
-def feature_name_generator(feature_name: str, delta1: float, delta2: float) -> str:
-    return feature_name + '_' + str(delta1) + '_' + str(delta2)
+    Parameters:
+    ----------
+    feature_name : str
+        Base name of the feature.
 
+    delta1 : float
+        The primary delta value to be appended to the feature name.
 
+    delta2 : float, optional (default is None)
+        An additional delta value to be appended after delta1. 
+        If not provided, only delta1 will be appended to the feature name.
+
+    Returns:
+    -------
+    str
+        The generated standardized feature name.
+
+    Examples:
+    --------
+    >>> feature_name_generator("VolumeAll", 2)
+    'VolumeAll_2'
+
+    >>> feature_name_generator("VolumeAll", 2, 5)
+    'VolumeAll_2_5'
+    """
+
+    if delta2 is not None:
+        return f"{feature_name}_{delta1}_{delta2}"
+    else:
+        return f"{feature_name}_{delta1}"
+    
+    
 # ---------------------- Calendar Mode -------------------------------------------------------
 def generate_cal_VolumeAll(df, delta1, delta2):
     """
@@ -533,7 +564,7 @@ def generate_trans_PastReturn(df, delta1, delta2):
     return 1 - avg_return / p_max
 
 
-# -------------------------------- Volume Mode -----------------------------------------------------------------
+# -------------------------------- Volume Mode ------------------------------------------------------
 
 def generate_volume_span(span, trade_volumes):
     """
@@ -572,150 +603,375 @@ def generate_volume_span(span, trade_volumes):
     return volume_spans
 
 
-
-def generate_vol_lambda(df, preIdxCol, curIdxCol, volumeAll):
+def check_volume_span(df, delta1, delta2):
     """
-    Generate volume lambda values for trades in the given DataFrame.
-
-    This function calculates the volume lambda values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified columns representing the previous index, current index,
-    and the total volume (trade volume) for each trade.
+    Ensure volume span indices exist in the DataFrame based on specified deltas.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    preIdxCol : str
-        Column name representing the previous index of the trade in the DataFrame.
-    curIdxCol : str
-        Column name representing the current index of the trade in the DataFrame.
-    volumeAll : str
-        Column containing the corresponding VolumeAll for each trade in the DataFrame.
+        DataFrame containing trade data, particularly the 'Trade_Volume' column.
+
+    delta1 : float
+        Defines the primary volume span.
+
+    delta2 : float
+        Defines the secondary volume span.
 
     Returns:
     -------
-    list
-        A list containing the volume lambda values for trades.
+    tuple (str, str)
+        The names of the primary and secondary volume span indices.
+    """
+
+    # Generate the volume span indices based on provided deltas
+    spanIdx1 = feature_name_generator('VolumeSpan', delta1)
+    spanIdx2 = feature_name_generator('VolumeSpan', delta2)
+
+    # If the primary span index is not in the dataframe, compute and add it
+    if spanIdx1 not in df:
+        if delta1 == 0:
+            df[spanIdx1] = df.index.copy()
+        else:
+            df[spanIdx1] = generate_volume_span(delta1, df['Trade_Volume'])
+
+    # If the secondary span index is not in the dataframe, compute and add it
+    if spanIdx2 not in df:
+        df[spanIdx2] = generate_volume_span(delta2, df['Trade_Volume'])
+
+    return spanIdx1, spanIdx2
+
+
+def generate_vol_VolumeAll(df, delta1, delta2):
+    """
+    Compute the cumulative volume for the specified volume span indices in the DataFrame.
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing trade data, specifically the 'Trade_Volume' column.
+
+    delta1 : float
+        Defines the primary volume span.
+
+    delta2 : float
+        Defines the secondary volume span.
+
+    Returns:
+    -------
+    list[float]
+        List containing the computed cumulative trade volume for each trade 
+        within the defined spans.
 
     """
+
+    # Ensure the required volume span indices are present in the DataFrame
+    spanIdx1, spanIdx2 = check_volume_span(df, delta1, delta2)
+
+    volumeAll = []
+    for i in df.index:
+        # Get the current and previous indices for the volume span
+        cur, pre = df.iloc[i][spanIdx1], df.iloc[i][spanIdx2]
+        
+        # Calculate the cumulative trade volume for the span and append to the list
+        volumeAll.append(df.iloc[pre:cur+1]['Trade_Volume'].sum())
+
+    return volumeAll
+
+
+def generate_vol_lambda(df, delta1, delta2):
+    """
+    Compute the Lambda values for a given trade DataFrame based on the specified volume spans.
+
+    The Lambda value for each trade is calculated as the difference between the maximum and 
+    minimum trade prices within the span defined by `delta1` and `delta2`, divided by the 
+    volume for the same span.
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing trade data with columns 'Is_Quote', 'Trade_Price', and 'Trade_Volume'.
+
+    delta1 : float
+        Defines the primary volume span.
+
+    delta2 : float
+        Defines the secondary volume span.
+
+    Returns:
+    -------
+    list[float]
+        List containing the Lambda values for each trade within the defined spans.
+
+    """
+
+    # Ensure the required volume span indices are present in the DataFrame
+    spanIdx1, spanIdx2 = check_volume_span(df, delta1, delta2)
+
+    # Fetch the VolumeAll column based on delta values or raise an error if not present
+    try:
+        volumeAll = df[feature_name_generator('VolumeAll', delta1, delta2)]
+    except KeyError:
+        raise ValueError('VolumeAll column not found in DataFrame.')
+    
     vol_Lambda = []
     for i in df.index:
-        if df.iloc[i]['Is_Quote']:
+        data = df.iloc[i]
+
+        # Skip calculating Lambda for quotes and append NaN instead
+        if data['Is_Quote']:
             vol_Lambda.append(np.nan)
             continue
-        pre = df.iloc[i][preIdxCol]
-        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
-        p_min, p_max = df.iloc[pre:cur + 1]['Trade_Price'].min(), df.iloc[pre:cur + 1]['Trade_Price'].max()
-        vol_Lambda.append((p_max - p_min) / df.iloc[i][volumeAll])
 
+        # Fetch the current and previous indices for the volume span
+        cur, pre = data[spanIdx1], data[spanIdx2]
+
+        # Calculate minimum and maximum trade prices within the span
+        p_min, p_max = df.iloc[pre:cur + 1]['Trade_Price'].min(), df.iloc[pre:cur + 1]['Trade_Price'].max()
+
+        # Compute the Lambda value and append to the list
+        vol_Lambda.append((p_max - p_min) / volumeAll[i])
+    
     return vol_Lambda
 
-    
-    
-def generate_vol_lobImbalance(df, preIdxCol, curIdxCol):
-    """
-    Generate volume LOB imbalance values for trades in the given DataFrame.
 
-    This function calculates the volume LOB imbalance values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified columns representing the previous index and current index of each trade.
+    
+def generate_vol_lobImbalance(df, delta1, delta2):
+    """
+    Compute the Limit Order Book (LOB) Imbalance values based on volume spans for a given trade DataFrame.
+
+    The LOB Imbalance for each trade is calculated as the difference between the offer size and the 
+    bid size, normalized by the total of offer and bid sizes, averaged over the volume span defined 
+    by `delta1` and `delta2`.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    preIdxCol : str
-        Column name representing the previous index of the trade in the DataFrame.
-    curIdxCol : str
-        Column name representing the current index of the trade in the DataFrame.
+        DataFrame containing trade data with columns 'Is_Quote', 'Offer_Size', and 'Bid_Size'.
+
+    delta1 : float
+        Defines the primary volume span.
+
+    delta2 : float
+        Defines the secondary volume span.
 
     Returns:
     -------
-    list
-        A list containing the volume LOB imbalance values for trades.
+    list[float]
+        List containing the LOB Imbalance values for each trade within the defined spans.
 
     """
+
+    # Ensure the required volume span indices are present in the DataFrame
+    spanIdx1, spanIdx2 = check_volume_span(df, delta1, delta2)
+
+    # Calculate the LOB Imbalance for each entry in the DataFrame
+    df['Imbalance'] = (df['Offer_Size'] - df['Bid_Size']) / (df['Offer_Size'] + df['Bid_Size'])
+
     vol_LobImbalance = []
     for i in df.index:
-        pre = df.iloc[i][preIdxCol]
-        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
+        data = df.iloc[i]
+
+        # Skip calculating LOB Imbalance for quotes and append NaN instead
+        if data['Is_Quote']:
+            vol_LobImbalance.append(np.nan)
+            continue
+        
+        # Fetch the current and previous indices for the volume span
+        cur, pre = data[spanIdx1], data[spanIdx2]
+
+        # Calculate and append the mean LOB Imbalance over the span
         vol_LobImbalance.append(df.iloc[pre:cur + 1]['Imbalance'].mean())
 
     return vol_LobImbalance
 
 
-def generate_vol_txnImbalance(df, preIdxCol, curIdxCol, volumeAll):
-    """
-    Generate volume transaction imbalance values for trades in the given DataFrame.
 
-    This function calculates the volume transaction imbalance values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified columns representing the previous index, current index,
-    and the total volume (trade volume) for each trade.
+def generate_vol_txnImbalance(df, delta1, delta2):
+    """
+    Compute the transaction (txn) imbalance values based on volume spans for a given trade DataFrame.
+
+    For each trade, the txn imbalance is calculated as the sum of the product of 'Trade_Volume' and 
+    'Trade_Sign' over the volume span defined by `delta1` and `delta2`, normalized by the volume 
+    aggregated over the same span.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    preIdxCol : str
-        Column name representing the previous index of the trade in the DataFrame.
-    curIdxCol : str
-        Column name representing the current index of the trade in the DataFrame.
-    volumeAll : str
-        Column containing the corresponding VolumeAll for each trade in the DataFrame.
+        DataFrame containing trade data with columns 'Is_Quote', 'Trade_Volume', and 'Trade_Sign'.
+
+    delta1 : float
+        Defines the primary volume span.
+
+    delta2 : float
+        Defines the secondary volume span.
 
     Returns:
     -------
-    list
-        A list containing the volume transaction imbalance values for trades.
-
+    list[float]
+        List containing the transaction imbalance values for each trade within the defined spans.
     """
+    
+    # Ensure the required volume span indices are present in the DataFrame
+    spanIdx1, spanIdx2 = check_volume_span(df, delta1, delta2)
+    
+    # Fetch the volume aggregated over the defined spans
+    try:
+        volumeAll = df[feature_name_generator('VolumeAll', delta1, delta2)]
+    except KeyError:
+        raise ValueError('VolumeAll column not found in DataFrame.')
+
+    # Calculate the txn imbalance for each entry in the DataFrame
+    df['Vt_Dir'] = df['Trade_Volume'] * df['Trade_Sign']
+
     vol_TxnImbalance = []
     for i in df.index:
-        if df.iloc[i]['Is_Quote']:
+        data = df.iloc[i]
+
+        # Skip calculating txn imbalance for quotes and append NaN instead
+        if data['Is_Quote']:
             vol_TxnImbalance.append(np.nan)
             continue
-        pre = df.iloc[i][preIdxCol]
-        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
+        
+        # Fetch the current and previous indices for the volume span
+        cur, pre = data[spanIdx1], data[spanIdx2]
+
+        # Calculate and append the txn imbalance over the span normalized by the volume
         sum_vt_dir = df.iloc[pre:cur + 1]['Vt_Dir'].sum()
-        vol_TxnImbalance.append(sum_vt_dir / df.iloc[i][volumeAll])
+        vol_TxnImbalance.append(sum_vt_dir / volumeAll[i])
 
     return vol_TxnImbalance
 
 
     
-def generate_vol_pastReturn(df, preIdxCol, curIdxCol):
+def generate_vol_pastReturn(df, delta1, delta2):
     """
-    Generate volume past return values for trades in the given DataFrame.
+    Calculate past return values based on volume spans for a given trade DataFrame.
 
-    This function calculates the volume past return values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified columns representing the previous index and current index of each trade.
+    For each trade, the past return is calculated as the difference between 1 and the ratio of 
+    the average trade price to the maximum trade price over the volume span defined by `delta1` and `delta2`.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    preIdxCol : str
-        Column name representing the previous index of the trade in the DataFrame.
-    curIdxCol : str
-        Column name representing the current index of the trade in the DataFrame.
+        DataFrame containing trade data with columns 'Is_Quote' and 'Trade_Price'.
+
+    delta1 : float
+        Defines the primary volume span.
+
+    delta2 : float
+        Defines the secondary volume span.
 
     Returns:
     -------
-    list
-        A list containing the volume past return values for trades.
+    list[float]
+        List containing the past return values for each trade within the defined spans.
 
     """
+    
+    # Ensure the required volume span indices are present in the DataFrame
+    spanIdx1, spanIdx2 = check_volume_span(df, delta1, delta2)
+    
     vol_PastReturn = []
     for i in df.index:
-        if df.iloc[i]['Is_Quote']:
+        data = df.iloc[i]
+
+        # Skip calculating past return for quotes and append NaN instead
+        if data['Is_Quote']:
             vol_PastReturn.append(np.nan)
             continue
-        pre = df.iloc[i][preIdxCol]
-        cur = i if not curIdxCol else df.iloc[i][curIdxCol]
+        
+        # Fetch the current and previous indices for the volume span
+        cur, pre = data[spanIdx1], data[spanIdx2]
+
+        # Calculate and append the past return over the span
         p_max = df.iloc[pre:cur + 1]['Trade_Price'].max()
         p_avg = df.iloc[pre:cur + 1]['Trade_Price'].mean()
         vol_PastReturn.append(1 - p_avg / p_max)
 
     return vol_PastReturn
+
+
+# --------------------------------PARENT GENERATOR/WRAPPER FUNCTION ----------------------------------------------
+
+def parent_generator_ret_imb(df, deltas, mode='calendar'):
+    """
+    Generate features for a given DataFrame based on the specified mode and time deltas.
+    
+    Depending on the mode selected ('calendar', 'transaction', or 'volume'), the function maps 
+    specific feature generator functions to the features and then computes them for each 
+    specified time delta pair.
+    
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing trade data.
+        
+    deltas : list[tuple]
+        List of delta pairs to compute features over.
+        
+    mode : str, optional (default='calendar')
+        The mode based on which the features are computed. 
+        It can be 'calendar', 'transaction', or 'volume'.
+        
+    Returns:
+    -------
+    pandas.DataFrame
+        Original DataFrame appended with the generated features.
+
+    Raises:
+    ------
+    ValueError
+        If the mode provided does not match the expected values.
+    """
+    
+    # Mapping of feature generation functions for calendar mode
+    cal_feature_mapping = {
+        'Lambda': generate_cal_Lambda,
+        'LobImbalance': generate_cal_LobImbalance,
+        'TxnImbalance': generate_cal_TxnImbalance,
+        'PastReturn': generate_cal_PastReturn
+    }
+    
+    # Mapping of feature generation functions for transaction mode
+    trans_feature_mapping = {
+        'Lambda': generate_vol_lambda,
+        'LobImbalance': generate_trans_LobImbalance,
+        'TxnImbalance': generate_trans_TxnImbalance,
+        'PastReturn': generate_cal_PastReturn
+    }
+    
+    # Mapping of feature generation functions for volume mode
+    vol_feature_mapping = {
+        'Lambda': generate_vol_lambda,
+        'LobImbalance': generate_vol_lobImbalance,
+        'TxnImbalance': generate_vol_txnImbalance,
+        'PastReturn': generate_vol_pastReturn
+    }
+    
+    # Select the appropriate feature mapping based on mode
+    if mode == 'calendar':
+        feature_mapping = cal_feature_mapping
+    elif mode == 'transaction':
+        feature_mapping = trans_feature_mapping
+    elif mode == 'volume':
+        feature_mapping = vol_feature_mapping
+    else:
+        raise ValueError("Invalid mode provided. Expected 'calendar', 'transaction', or 'volume'.")
+        
+    feature_df = pd.DataFrame()
+    
+    # Generate features for each delta pair and append to feature DataFrame
+    for f, f_function in feature_mapping.items():
+        for delta in deltas:
+            d1, d2 = delta[0], delta[1]
+            f_name = feature_name_generator(f, d1, d2)
+            feature_df[f_name] = f_function(df, d1, d2)
+    
+    # Concatenate the original DataFrame with the generated features
+    return pd.concat([df, feature_df], axis=1)
+
+
 
 
 
