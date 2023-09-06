@@ -171,7 +171,7 @@ def feature_name_generator(feature_name: str, delta1: float, delta2: float = Non
 # ---------------------- Calendar Mode -------------------------------------------------------
 def generate_cal_VolumeAll(df, delta1, delta2):
     """
-    Generate calendar VolumeAll values for trades in the given DataFrame.
+    Generate calendar VolumeAll values for trades and quotes in the given DataFrame.
 
     This function calculates the calendar VolumeAll values for trades in the provided DataFrame (`df`).
     The calculation is based on the specified time deltas `delta1` and `delta2`.
@@ -218,16 +218,13 @@ def generate_cal_Lambda(df, delta1, delta2):
         If the required VolumeAll column (based on delta1, delta2) is not found in df.
     """
     
-    # Selecting only the rows where 'Is_Quote' is False i.e., trades
-    trades_df = df[df['Is_Quote'] == False]
-
     # Calculate the maximum trade price for each trade within the specified time window
-    p_max = trades_df['Participant_Timestamp_f'].apply(
+    p_max = df['Participant_Timestamp_f'].apply(
         lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan)
     )
 
     # Calculate the minimum trade price for each trade within the specified time window
-    p_min = trades_df['Participant_Timestamp_f'].apply(
+    p_min = df['Participant_Timestamp_f'].apply(
         lambda t: min(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan)
     )
 
@@ -343,11 +340,11 @@ def generate_cal_PastReturn(df, delta1, delta2):
 
     """
     # Calculate the average trade price for each trade within the specified time window
-    avg_return = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].apply(
+    avg_return = df['Participant_Timestamp_f'].apply(
         lambda t: df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'].mean())
 
     # Calculate the maximum trade price for each trade within the specified time window
-    p_max = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].apply(
+    p_max = df['Participant_Timestamp_f'].apply(
         lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan))
 
     # Calculate the PastReturn value for each trade
