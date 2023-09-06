@@ -20,12 +20,12 @@ def get_trades(symbols, start_date, end_date, row_limit):
     scp = None
 
     try:
-        ssh.connect(host, username=db_user, password=server_password)
+        ssh.connect(host, username=server_user, password=server_password)
 
         for symbol in symbols:
             # Execute a command to change directory and list files
             command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd TAQNYSE-Clickhouse && cd server_helpers && \
-            python3 trade_server_helpers.py "{db_user}" "{db_pass}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
+            python3 trade_server_helpers.py "{server_user}" "{server_password}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
 
