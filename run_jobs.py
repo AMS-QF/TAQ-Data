@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from data_preprocessing.get_data import get_quotes, get_ref, get_trades
+from data_preprocessing.get_data import get_trades
 
 
 def run_jobs(symbol: str, start_date: str, end_date: str, row_limit=1000000):
@@ -24,9 +24,9 @@ def run_jobs(symbol: str, start_date: str, end_date: str, row_limit=1000000):
     # To-DO: create get-reference-data function
 
     # load data
-    get_ref(symbol, start_date, end_date, row_limit)
+    # get_ref(symbol, start_date, end_date, row_limit)
     get_trades(symbol, start_date, end_date, row_limit)
-    get_quotes(symbol, start_date, end_date, row_limit)
+    # get_quotes(symbol, start_date, end_date, row_limit)
 
     # TO-DO - return paths of raw data to be cleaned
 

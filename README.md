@@ -3,7 +3,6 @@ Included are the client side-scripts for access to the TAQ-Clickhouse Database r
 
 Detailed instructions are also included in Accessing the TAQ-Clickhouse Database PDF
 
-## Setup
 
 ### Remote Setup
 - Pull TAQNYSE-Clickhouse repo into home directory on remote server
@@ -52,7 +51,7 @@ Detailed instructions are also included in Accessing the TAQ-Clickhouse Database
 
 
 
-### Example Usage
+### Depreciated Setup
 
 Here we will show how to access the TAQ-Clickhouse database remotely, clean data, and generate features from the data with one command.
 
