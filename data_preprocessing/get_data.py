@@ -1,7 +1,9 @@
-import paramiko
-from scp import SCPClient
-from dotenv import load_dotenv
 import os
+
+import paramiko
+from dotenv import load_dotenv
+from scp import SCPClient
+
 
 def get_trades(symbols, start_date, end_date, row_limit):
     # load the contents of the .env file into the environment
@@ -28,26 +30,23 @@ def get_trades(symbols, start_date, end_date, row_limit):
             python3 trade_server_helpers.py "{db_user}" "{db_pass}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
-
-
             print(f"Output for symbol {symbol}:")
             for line in stdout:
-                print('... ' + line.strip('\n'))
+                print("... " + line.strip("\n"))
 
             print(f"Errors for symbol {symbol}:")
             for line in stderr:
-                print('... ' + line.strip('\n'))
+                print("... " + line.strip("\n"))
 
             # SCPCLient takes a paramiko transport as an argument
             scp = SCPClient(ssh.get_transport())
 
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
-            local_file_path = f'../data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+            local_file_path = f'data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        local_file_path = f'data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        scp.get('TAQNYSE-Clickhouse/trade_results.csv', local_file_path)
+
+        scp.get("TAQNYSE-Clickhouse/trade_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -58,6 +57,7 @@ def get_trades(symbols, start_date, end_date, row_limit):
             scp.close()
         ssh.close()
 
+
 def get_quotes(symbols, start_date, end_date, row_limit):
     # load the contents of the .env file into the environment
     load_dotenv()
@@ -66,8 +66,8 @@ def get_quotes(symbols, start_date, end_date, row_limit):
     host = os.getenv("host")
     server_user = os.getenv("server_user")
     server_password = os.getenv("server_password")
-    db_user = os.getenv("db_user")
-    db_pass = os.getenv("db_pass")
+    os.getenv("db_user")
+    os.getenv("db_pass")
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -85,11 +85,11 @@ def get_quotes(symbols, start_date, end_date, row_limit):
 
             print(f"Output for symbol {symbol}:")
             for line in stdout:
-                print('... ' + line.strip('\n'))
+                print("... " + line.strip("\n"))
 
             print(f"Errors for symbol {symbol}:")
             for line in stderr:
-                print('... ' + line.strip('\n'))
+                print("... " + line.strip("\n"))
 
             # SCPCLient takes a paramiko transport as an argument
             scp = SCPClient(ssh.get_transport())
@@ -98,10 +98,7 @@ def get_quotes(symbols, start_date, end_date, row_limit):
             # and save it to the data directory in the pipelines folder
             local_file_path = f'data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        local_file_path = f'data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        scp.get('TAQNYSE-Clickhouse/quote_results.csv', local_file_path)
-
+        scp.get("TAQNYSE-Clickhouse/quote_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -112,6 +109,7 @@ def get_quotes(symbols, start_date, end_date, row_limit):
             scp.close()
         ssh.close()
 
+
 def get_ref(symbols, start_date, end_date, row_limit):
     # load the contents of the .env file into the environment
     load_dotenv()
@@ -120,8 +118,8 @@ def get_ref(symbols, start_date, end_date, row_limit):
     host = os.getenv("host")
     server_user = os.getenv("server_user")
     server_password = os.getenv("server_password")
-    db_user = os.getenv("db_user")
-    db_pass = os.getenv("db_pass")
+    os.getenv("db_user")
+    os.getenv("db_pass")
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -139,11 +137,11 @@ def get_ref(symbols, start_date, end_date, row_limit):
 
             print(f"Output for symbol {symbol}:")
             for line in stdout:
-                print('... ' + line.strip('\n'))
+                print("... " + line.strip("\n"))
 
             print(f"Errors for symbol {symbol}:")
             for line in stderr:
-                print('... ' + line.strip('\n'))
+                print("... " + line.strip("\n"))
 
             # SCPCLient takes a paramiko transport as an argument
             scp = SCPClient(ssh.get_transport())
@@ -152,9 +150,7 @@ def get_ref(symbols, start_date, end_date, row_limit):
             # and save it to the data directory in the pipelines folder
             local_file_path = f'data/ref_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        local_file_path = f'data/ref_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        scp.get('TAQNYSE-Clickhouse/refdata_results.csv', local_file_path)
+        scp.get("TAQNYSE-Clickhouse/refdata_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
