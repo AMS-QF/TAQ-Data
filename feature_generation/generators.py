@@ -52,45 +52,6 @@ def generate_imbalance(df: pd.DataFrame) -> pd.DataFrame:
     return df, ["Imbalance"]
 
 
-def generate_trade_side(df: pd.DataFrame) -> pd.DataFrame:
-    """Classify trade side using tick test"""
-    trade_direction_dic = {
-    "uptick": 1,
-    "zero-uptick": 1,
-    "downtick": -1,
-    "zero-downtick": -1,
-    "NaN": np.nan
-    }
-    pre_price, pre_cat = 0, 0
-    trade_cats = []
-    for p in df["Trade_Price"].values:
-        if pd.isna(p):
-            trade_cats.append("NaN")
-        else:
-            if p > pre_price:
-                trade_cats.append("uptick")
-                pre_cat = "uptick"
-            elif p < pre_price:
-                trade_cats.append("downtick")
-                pre_cat = "downtick"
-            else:
-                if pre_cat == "downtick":
-                    trade_cats.append("zero-downtick")
-                    pre_cat = "zero-downtick"
-                else:
-                    # question: what about previous one is zero-uptick?
-                    trade_cats.append("zero-uptick")
-                    pre_cat = "zero-uptick"
-
-            pre_price = p
-
-    trade_signs = [trade_direction_dic[c] for c in trade_cats]
-
-    df["Trade_Side"] = trade_signs
-    
-    return df, ["Trade_Side"]
-
-
 # def generate_prevailing_nbbo(df: pd.DataFrame) -> pd.DataFrame:
 #     """Generate Prevailing Best Bid Price"""
 
@@ -114,24 +75,6 @@ def generate_trade_side(df: pd.DataFrame) -> pd.DataFrame:
 #     for column in column_dict.keys():
 #         df[column] = merged_df[column_dict[column]]
 #     return df, list(column_dict.keys())
-
-
-def generate_mox_identifier(df: pd.DataFrame) -> pd.DataFrame:
-    """Generate MOX Identifier"""
-
-    df_copy = df.copy()
-    df_copy.index = pd.to_datetime(df_copy.index)
-
-    # round the index to the nearest millisecond
-    grouped_df = df_copy.groupby(df_copy.index.map(lambda t: t.round("1us")))
-
-    # assign a unique identifier to each group
-    for i, (name, group) in enumerate(grouped_df):
-        df_copy.loc[group.index, "MOX_Identifier"] = i
-
-    df["MOX_Identifier"] = df_copy["MOX_Identifier"].values
-
-    return df, ["MOX_Identifier"]
 
 
 def generate_price_impact(df: pd.DataFrame) -> pd.DataFrame:
@@ -160,7 +103,6 @@ def parent_generator(df: pd.DataFrame, feature_to_generate: str) -> pd.DataFrame
         "Imbalance_Weighted_Effective_Spread": generate_imbalance_weighted_effective_spread,
         "Midprice": generate_midprice,
         "Microprice": generate_microprice,
-        "Trade_Side": generate_trade_side,
         # "Prevailing_NBBO": generate_prevailing_nbbo,
         "MOX_Identifier": generate_mox_identifier,
         "Price_Impact": generate_price_impact,
