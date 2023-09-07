@@ -43,7 +43,9 @@ def get_trades(symbols, start_date, end_date, row_limit):
 
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
-            local_file_path = f'../pipelines/data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+            local_file_path = f'../data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+        local_file_path = f'data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
         scp.get('TAQNYSE-Clickhouse/trade_results.csv', local_file_path)
 
@@ -94,7 +96,9 @@ def get_quotes(symbols, start_date, end_date, row_limit):
 
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
-            local_file_path = f'../pipelines/data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+            local_file_path = f'data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+        local_file_path = f'data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
         scp.get('TAQNYSE-Clickhouse/quote_results.csv', local_file_path)
 
@@ -146,7 +150,9 @@ def get_ref(symbols, start_date, end_date, row_limit):
 
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
-            local_file_path = f'../pipelines/data/ref_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+            local_file_path = f'data/ref_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+        local_file_path = f'data/ref_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
         scp.get('TAQNYSE-Clickhouse/refdata_results.csv', local_file_path)
 
