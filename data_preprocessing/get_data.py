@@ -26,8 +26,8 @@ def get_trades(symbols, start_date, end_date, row_limit):
 
         for symbol in symbols:
             # Execute a command to change directory and list files
-            command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd TAQNYSE-Clickhouse && cd server_helpers && \
-            python3 trade_server_helpers.py "{db_user}" "{db_pass}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
+            command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd ../TAQNYSE-Clickhouse && cd server_helpers && \
+            python3 trade_server_helpers.py "{server_user}" "{db_user}" "{db_pass}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
             print(f"Output for symbol {symbol}:")
@@ -46,7 +46,7 @@ def get_trades(symbols, start_date, end_date, row_limit):
             local_file_path = f'data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
 
-        scp.get("TAQNYSE-Clickhouse/trade_results.csv", local_file_path)
+        scp.get(f"trade_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -66,8 +66,8 @@ def get_quotes(symbols, start_date, end_date, row_limit):
     host = os.getenv("host")
     server_user = os.getenv("server_user")
     server_password = os.getenv("server_password")
-    os.getenv("db_user")
-    os.getenv("db_pass")
+    db_user = os.getenv("db_user")
+    db_pass = os.getenv("db_pass")
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -79,8 +79,8 @@ def get_quotes(symbols, start_date, end_date, row_limit):
 
         for symbol in symbols:
             # Execute a command to change directory and list files
-            command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd TAQNYSE-Clickhouse && cd server_helpers && \
-                python3 quote_server_helpers.py "{server_user}" "testpassword321" "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
+            command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd ../TAQNYSE-Clickhouse && cd server_helpers && \
+                python3 quote_server_helpers.py "{server_user}" "{db_user}" "{db_pass}"  "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
             print(f"Output for symbol {symbol}:")
@@ -98,7 +98,7 @@ def get_quotes(symbols, start_date, end_date, row_limit):
             # and save it to the data directory in the pipelines folder
             local_file_path = f'data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        scp.get("TAQNYSE-Clickhouse/quote_results.csv", local_file_path)
+        scp.get(f"quote_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -118,8 +118,8 @@ def get_ref(symbols, start_date, end_date, row_limit):
     host = os.getenv("host")
     server_user = os.getenv("server_user")
     server_password = os.getenv("server_password")
-    os.getenv("db_user")
-    os.getenv("db_pass")
+    db_user = os.getenv("db_user")
+    db_pass = os.getenv("db_pass")
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -131,8 +131,8 @@ def get_ref(symbols, start_date, end_date, row_limit):
 
         for symbol in symbols:
             # Execute a command to change directory and list files
-            command = f'source root/anaconda3/conda.sh && conda activate query_user && cd TAQNYSE-Clickhouse && cd server_helpers && \
-                python3 refdata_server_helpers.py "{server_user}" "{server_password}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
+            command = f'source root/anaconda3/conda.sh && conda activate query_user && cd ../TAQNYSE-Clickhouse && cd server_helpers && \
+                python3 refdata_server_helpers.py "{server_user}" "{db_user}" "{db_pass}"  "{symbol}" "{start_date}" "{end_date}" "{row_limit}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
             print(f"Output for symbol {symbol}:")
@@ -150,7 +150,7 @@ def get_ref(symbols, start_date, end_date, row_limit):
             # and save it to the data directory in the pipelines folder
             local_file_path = f'data/ref_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        scp.get("TAQNYSE-Clickhouse/refdata_results.csv", local_file_path)
+        scp.get(f"refdata_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
