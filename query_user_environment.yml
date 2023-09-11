@@ -1,0 +1,71 @@
+name: query_user
+
+channels:
+- conda-forge
+- bioconda
+- anaconda
+  - conda-forge
+dependencies:
+  -  _libgcc_mutex
+  -  _openmp_mutex
+  -  blas
+  -  bzip2
+  -  ca-certificates
+  -  certifi
+  -  charset-normalizer
+  -  clickhouse-sqlalchemy
+  -  exchange-calendars
+  -  idna
+  -  intel-openmp
+  -  korean_lunar_calendar
+  -  ld_impl_linux-64
+  -  libffi
+  -  libgcc-ng
+  -  libgomp
+  -  libstdcxx-ng
+  -  libuuid
+  -  mkl
+  -  mkl_fft
+  -  mkl_random
+  -  ncurses
+  -  numpy-base
+  -  openssl
+  -  packaging
+  -  pandas_market_calendars
+  -  pip
+  -  pycparser
+  -  pyluach
+  -  pyopenssl
+  -  pyparsing
+  -  pysocks
+  -  python
+  -  python-dateutil
+  -  python_abi
+  -  pytz
+  -  readline
+  -  requests
+  -  setuptools
+  -  six
+  -  sqlite
+  -  tk
+  -  toolz
+  -  tzdata
+  -  tzlocal
+  -  urllib3
+  -  wheel
+  -  xz
+  -  zlib
+  - pip:
+    - brotlipy
+    - cffi
+    - clickhouse-driver
+    - configobj
+    - cryptography
+    - greenlet
+    - mkl-fft
+    - mkl-random
+    - mkl-service
+    - numpy
+    - pandas
+    - sqlalchemy
+prefix: /opt/anaconda3/envs
