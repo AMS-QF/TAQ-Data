@@ -44,9 +44,9 @@ def get_trades(symbols, start_date, end_date, row_limit):
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
             local_file_path = f'data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+            os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
 
-        scp.get(f"trade_results.csv", local_file_path)
+            scp.get(f"trade_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -97,8 +97,8 @@ def get_quotes(symbols, start_date, end_date, row_limit):
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
             local_file_path = f'data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        scp.get(f"quote_results.csv", local_file_path)
+            os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+            scp.get(f"quote_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -148,9 +148,9 @@ def get_ref(symbols, start_date, end_date, row_limit):
 
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
-            local_file_path = f'data/ref_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
-        scp.get(f"refdata_results.csv", local_file_path)
+            local_file_path = f'data/refdata_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv'
+            os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+            scp.get(f"refdata_results.csv", local_file_path)
 
     except Exception as e:
         print(f"An error occurred: {e}")
