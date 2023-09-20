@@ -4,5 +4,6 @@ data_preprocessing/__pycache__
 .env
 feature_generation/__pycache__/
 pipelines/__pycache__/
+personal_research/
+HFT_Research/
 .DS_Store
-pipelines/testData/
