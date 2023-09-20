@@ -190,7 +190,7 @@ def generate_cal_VolumeAll(df, delta1, delta2):
     pandas.Series
         A pandas Series containing the calculated calendar VolumeAll values.
     """
-    return df['Participant_Timestamp_f'].apply(lambda t: sum(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Volume']))
+    return df['Participant_Timestamp_f'].apply(lambda t: sum(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='right')]['Trade_Volume']))
 
 
 def generate_cal_Lambda(df, delta1, delta2):
@@ -220,12 +220,12 @@ def generate_cal_Lambda(df, delta1, delta2):
     
     # Calculate the maximum trade price for each trade within the specified time window
     p_max = df['Participant_Timestamp_f'].apply(
-        lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan)
+        lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='right')]['Trade_Price'], default=np.nan)
     )
 
     # Calculate the minimum trade price for each trade within the specified time window
     p_min = df['Participant_Timestamp_f'].apply(
-        lambda t: min(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan)
+        lambda t: min(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='right')]['Trade_Price'], default=np.nan)
     )
 
     # Calculate the price difference (p_max - p_min) for each trade
@@ -270,7 +270,7 @@ def generate_cal_LobImbalance(df, delta1, delta2):
     
     # Calculate mean LOB imbalance within the specified time window for each trade timestamp
     return df['Participant_Timestamp_f'].apply(
-        lambda t: df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Imbalance'].mean()
+        lambda t: df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='right')]['Imbalance'].mean()
     )
 
 
@@ -303,7 +303,7 @@ def generate_cal_TxnImbalance(df, delta1, delta2):
 
     # Calculate the sum of transaction imbalances within the specified time window for each trade timestamp
     sum_Vt_Dir = df['Participant_Timestamp_f'].apply(
-        lambda t: sum(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Vt_Dir'])
+        lambda t: sum(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='right')]['Vt_Dir'])
     )
     
     try:
@@ -341,11 +341,11 @@ def generate_cal_PastReturn(df, delta1, delta2):
     """
     # Calculate the average trade price for each trade within the specified time window
     avg_return = df['Participant_Timestamp_f'].apply(
-        lambda t: df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'].mean())
+        lambda t: df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='right')]['Trade_Price'].mean())
 
     # Calculate the maximum trade price for each trade within the specified time window
     p_max = df['Participant_Timestamp_f'].apply(
-        lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='neither')]['Trade_Price'], default=np.nan))
+        lambda t: max(df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive='right')]['Trade_Price'], default=np.nan))
 
     # Calculate the PastReturn value for each trade
     return 1 - avg_return / p_max
@@ -356,71 +356,113 @@ def generate_cal_PastReturn(df, delta1, delta2):
 
 def generate_trans_VolumeAll(df, delta1, delta2):
     """
-    Generate transaction VolumeAll values for trades in the given DataFrame.
-
-    This function calculates the transaction VolumeAll values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified time deltas `delta1` and `delta2`.
+    Generate the aggregated trade volume over a specified range of transactions.
+    
+    This function aggregates the trade volume over a range defined by `delta1` and `delta2`
+    (i.e., from the `delta1`-th last transaction to the `delta2`-th last transaction).
+    If a row is not associated with a valid quote, it gets assigned a NaN value.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    delta1 : pandas.Timedelta
-        The first time delta (offset) to calculate the start of the rolling window.
-    delta2 : pandas.Timedelta
-        The second time delta (offset) to calculate the end of the rolling window.
-
+        DataFrame containing the data with at least 'Valid_Quotes', 'Is_Quote', and 'Trade_Volume' columns.
+    delta1 : int
+        Starting point (transaction offset) for the aggregation.
+    delta2 : int
+        Ending point (transaction offset) for the aggregation.
+    
     Returns:
     -------
-    pandas.Series
-        A pandas Series containing the calculated transaction VolumeAll values.
+    list
+        A list of aggregated volumes for each entry in the DataFrame.
     """
-    # Shift 'Trade_Volume' column by `delta1` time offset
-    shifted_trade_volume = df[df['Is_Quote'] == False]['Trade_Volume'].shift(delta1)
+    
+    volumeAll = []
 
-    # Calculate the rolling sum of the shifted trade volumes within the window defined by `delta2-delta1`
-    return shifted_trade_volume.rolling(delta2 - delta1).sum()
+    for i in df.index:
+        data = df.iloc[i]
+        
+        # Check if the row is a trade or valid quotes
+        if (not data['Is_Quote']) or data['Valid_Quotes']:
+            numTrans = 0 if data['Valid_Quotes'] else 1 
+            cumVol = 0 if data['Valid_Quotes'] else data['Trade_Volume']
+            next = i-1
+
+            # Loop backwards to aggregate volume over the specified transaction range
+            while next >= 0 and numTrans < delta2:
+                d = df.iloc[next]
+
+                # Check if the row is a trade (not a quote)
+                if not d['Is_Quote']:
+                    numTrans += 1
+
+                # If the transaction is within the specified range, add its volume
+                if delta1 <= numTrans < delta2:
+                    cumVol += d['Trade_Volume']
+
+                next -= 1
+            
+            volumeAll.append(cumVol)
+        else:
+            volumeAll.append(np.nan)  # Append NaN for invalid quotes
+
+    return volumeAll
+
 
 
 def generate_trans_Lambda(df, delta1, delta2):
     """
-    Generate transaction Lambda values for trades in the given DataFrame.
-
-    This function calculates the transaction Lambda values for trades based on the difference 
-    between rolling maximum and minimum trade prices within a defined window and the corresponding volume.
-
+    Generate the Lambda values over a specified range of transactions.
+    
+    This function calculates the Lambda value, defined as the price range (max price - min price) 
+    over a range defined by `delta1` and `delta2` transactions, divided by the aggregate volume
+    over the same range.
+    
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    delta1 : pandas.Timedelta
-        The first time delta (offset) to calculate the start of the rolling window.
-    delta2 : pandas.Timedelta
-        The second time delta (offset) to calculate the end of the rolling window.
-
+        DataFrame containing the data with columns: 'Is_Quote', 'Valid_Quotes', 'Trade_Price'.
+    delta1 : int
+        Starting point (transaction offset) for calculating the price range.
+    delta2 : int
+        Ending point (transaction offset) for calculating the price range.
+    
     Returns:
     -------
-    pandas.Series
-        A pandas Series containing the calculated transaction Lambda values.
-
+    list
+        A list of Lambda values for each entry in the DataFrame.
+    
     Raises:
     ------
-    ValueError:
-        If the required VolumeAll column (based on delta1, delta2) is not found in df.
+    ValueError
+        If 'VolumeAll' column is not found in the DataFrame.
     """
+    
+    p_diff = []  # List to store the difference between max and min prices over the transaction range
 
-    # Filter the DataFrame to select only trades, not quotes
-    trades_df = df[df['Is_Quote'] == False]
-
-    # Shift 'Trade_Price' column by `delta1` time offset
-    shifted_trade_price = trades_df['Trade_Price'].shift(delta1)
-
-    # Calculate the rolling maximum and minimum of the shifted trade prices within the window defined by `delta2-delta1`
-    p_max = shifted_trade_price.rolling(delta2 - delta1).max()
-    p_min = shifted_trade_price.rolling(delta2 - delta1).min()
-
-    # Calculate the price difference (p_max - p_min) for each trade
-    p_diff = p_max - p_min
+    for i in df.index:
+        data = df.iloc[i]
+        
+        # Check if the current entry is not a quote or has valid quotes
+        if (not data['Is_Quote']) or data['Valid_Quotes']:
+            numTrans = 0 if data['Valid_Quotes'] else 1 
+            pmax = -float("inf") if data['Valid_Quotes'] else data['Trade_Price']
+            pmin = float("inf") if data['Valid_Quotes'] else data['Trade_Price']
+            
+            next = i-1
+            # Loop backwards to find max and min prices over the specified transaction range
+            while next >= 0 and numTrans < delta2:
+                d = df.iloc[next]
+                if not d['Is_Quote']:
+                    numTrans += 1
+                if delta1 <= numTrans < delta2:
+                    pmax = max(pmax, d['Trade_Price'])
+                    pmin = min(pmin, d['Trade_Price'])
+                
+                next -= 1
+            p_diff.append(pmax - pmin)
+        else:
+            p_diff.append(np.nan)  # Append NaN if the current entry is a quote without valid quotes
     
     try:
         # Generate the name of the volume column based on the given deltas using the assumed feature_name_generator function
@@ -434,19 +476,21 @@ def generate_trans_Lambda(df, delta1, delta2):
 
 
 
+
 def generate_trans_LobImbalance(df, delta1, delta2):
     """
     Generate transaction LOB imbalance values for trades in the given DataFrame.
 
-    This function calculates the LOB imbalance values based on the difference between the offer 
-    and bid sizes, normalized by their sum, for trades in the provided DataFrame (`df`). 
-    The calculation window is based on the specified time deltas `delta1` and `delta2`.
+    This function calculates the LOB imbalance values based on the difference 
+    between the offer and bid sizes, normalized by their sum, for trades in 
+    the provided DataFrame (`df`). The calculation window is based on the 
+    specified time deltas `delta1` and `delta2`.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data with columns: Offer_Size, Bid_Size, Is_Quote, 
-        and Participant_Timestamp_f.
+        DataFrame containing the data with columns: Offer_Size, Bid_Size, 
+        Is_Quote, and Participant_Timestamp_f.
     delta1 : int
         The first time delta (offset) to define the start of the computation window.
     delta2 : int
@@ -457,108 +501,157 @@ def generate_trans_LobImbalance(df, delta1, delta2):
     list
         A list containing the calculated LOB imbalance values.
     """
-
+    
     # Calculate the LOB imbalance for each row
     df['Imbalance'] = (df['Offer_Size'] - df['Bid_Size']) / (df['Offer_Size'] + df['Bid_Size'])
 
-    # Container for the resulting LOB imbalance values
     lobImbalance = []
 
     # Iterate over the DataFrame's indices
     for i in df.index:
+        data = df.iloc[i]
 
-        # If the current row is a quote, append NaN to the results and continue
-        if df.iloc[i]['Is_Quote']:
+        # Check if the current row is a trade or valid quote
+        if (not data['Is_Quote']) or data['Valid_Quotes']:
+            numTrans = 0 if data['Valid_Quotes'] else 1 
+            imbalances = [data['Imbalance']] if data['Valid_Quotes'] else []
+            next = i-1
+
+            while next >= 0 and numTrans < delta2:
+                d = df.iloc[next]
+                
+                # Check if a trade/transaction
+                if not d['Is_Quote']:
+                    numTrans += 1
+                    if numTrans >= delta2:
+                        break
+                # Check if a quote (valid or invalid)
+                else:
+                    if delta1 <= numTrans < delta2:
+                        imbalances.append(d['Imbalance'])
+                
+                next -= 1
+
+            # Calculate the average LOB imbalance
+            lobImbalance.append(np.nan if not imbalances else sum(imbalances) / len(imbalances))
+        else:
             lobImbalance.append(np.nan)
-            continue
-
-        # Define the start and end timestamps of the computation window
-        t1 = df[df['Is_Quote'] == False].shift(delta1)['Participant_Timestamp_f'][i]
-        t2 = df[df['Is_Quote'] == False].shift(delta2)['Participant_Timestamp_f'][i]
-
-        # Calculate the mean LOB imbalance within the defined window
-        val = df[df['Participant_Timestamp_f'].between(t2, t1, inclusive='right')]['Imbalance'].mean()
-        
-        # Append the calculated value to the results
-        lobImbalance.append(val)
 
     return lobImbalance
 
 
 def generate_trans_TxnImbalance(df, delta1, delta2):
     """
-    Generate transaction TxnImbalance values for trades in the given DataFrame.
-
-    This function calculates the transaction TxnImbalance values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified time deltas `delta1` and `delta2`.
+    Generate transaction imbalance values based on the specified deltas.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    delta1 : pandas.Timedelta
-        The first time delta (offset) to calculate the start of the rolling window.
-    delta2 : pandas.Timedelta
-        The second time delta (offset) to calculate the end of the rolling window.
-  
+        DataFrame containing the data with columns: Trade_Volume, Trade_Sign, Is_Quote, and Valid_Quotes.
+    delta1 : int
+        The first transaction delta to define the start of the computation window.
+    delta2 : int
+        The second transaction delta to define the end of the computation window.
+
     Returns:
     -------
-    pandas.Series
-        A pandas Series containing the calculated transaction TxnImbalance values.
+    list
+        A list containing the calculated transaction imbalance values.
     """
-    # Calculate the transaction imbalance for each trade and store it in the 'Vt_Dir' column
+
+    # Compute transaction direction for each trade
     df['Vt_Dir'] = df['Trade_Volume'] * df['Trade_Sign']
+    sum_vt_dir = []
 
-    # Shift the 'Vt_Dir' column by `delta1` time offset
-    shifted_vt_dir = df[df['Is_Quote'] == False]['Vt_Dir'].shift(delta1)
+    for i in df.index:
+        data = df.iloc[i]
 
-    # Calculate the rolling sum of the shifted transaction imbalances within the window defined by `delta2-delta1`
-    vt_dir = shifted_vt_dir.rolling(delta2 - delta1).sum()
-    
+        if (not data['Is_Quote']) or data['Valid_Quotes']:
+            numTrans = 0 if data['Valid_Quotes'] else 1
+            vt_dir = 0 if data['Valid_Quotes'] else data['Vt_Dir']
+            next_idx = i - 1
+
+            while next_idx >= 0 and numTrans < delta2:
+                d = df.iloc[next_idx]
+
+                if not d['Is_Quote']:
+                    numTrans += 1
+
+                if delta1 <= numTrans < delta2:
+                    vt_dir += d['Vt_Dir']
+
+                next_idx -= 1
+
+            sum_vt_dir.append(vt_dir)
+        else:
+            sum_vt_dir.append(np.nan)
+
     try:
-        # Generate the name of the volume column based on the given deltas using the assumed feature_name_generator function
-        volumeAll = df[feature_name_generator('VolumeAll', delta1, delta2)]
-        
-        # Calculate the TxnImbalance value for each trade by dividing the price difference by the volume (volumeAll)
-        return vt_dir / volumeAll 
+        volume_column_name = feature_name_generator('VolumeAll', delta1, delta2)
+        volumeAll = df[volume_column_name]
 
+        return sum_vt_dir / volumeAll
     except KeyError:
         raise ValueError('VolumeAll column not found in DataFrame.')
+
 
         
 def generate_trans_PastReturn(df, delta1, delta2):
     """
-    Generate transaction PastReturn values for trades in the given DataFrame.
-
-    This function calculates the transaction PastReturn values for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified time deltas `delta1` and `delta2`.
+    Calculate the past return based on the specified transaction deltas.
 
     Parameters:
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data.
-    delta1 : pandas.Timedelta
-        The first time delta (offset) to calculate the start of the rolling window.
-    delta2 : pandas.Timedelta
-        The second time delta (offset) to calculate the end of the rolling window.
+        DataFrame containing the data with columns: Bid_Price, Offer_Price, Is_Quote, Trade_Price, and Valid_Quotes.
+    delta1 : int
+        The first transaction delta to define the start of the computation window.
+    delta2 : int
+        The second transaction delta to define the end of the computation window.
 
     Returns:
     -------
-    pandas.Series
-        A pandas Series containing the calculated transaction PastReturn values.
+    list
+        A list containing the calculated past return values.
     """
-    # Shift 'Trade_Price' column by `delta1` time offset
-    shifted_trade_price = df[df['Is_Quote'] == False]['Trade_Price'].shift(delta1)
+    
+    # Calculate the mid-price for each row
+    df['MidPrice'] = (df['Bid_Price'] + df['Offer_Price']) / 2
+    past_ret = []
 
-    # Calculate the rolling mean of the shifted trade prices within the window defined by `delta2-delta1`
-    avg_return = shifted_trade_price.rolling(delta2 - delta1).mean()
+    for i in df.index:
+        data = df.iloc[i]
 
-    # Calculate the rolling maximum of the shifted trade prices within the window defined by `delta2-delta1`
-    p_max = shifted_trade_price.rolling(delta2 - delta1).max()
+        # If the current row is a trade or valid quote
+        if (not data['Is_Quote']) or data['Valid_Quotes']:
+            numTrans = 0 if data['Valid_Quotes'] else 1
+            ret_values = [data['MidPrice']] if data['Valid_Quotes'] else []
+            pmax = data['Trade_Price'] if not data['Valid_Quotes'] else -float("inf")
+            next_idx = i - 1
 
-    # Calculate the PastReturn value for each trade by subtracting the rolling mean (`avg_return`) from `p_max`
-    # and dividing the result by `p_max`
-    return 1 - avg_return / p_max
+            while next_idx >= 0 and numTrans < delta2:
+                d = df.iloc[next_idx]
+
+                if not d['Is_Quote']:
+                    numTrans += 1
+                    if numTrans < delta2:
+                        pmax = max(pmax, d['Trade_Price'])
+                else:
+                    if delta1 <= numTrans < delta2:
+                        ret_values.append(d['MidPrice'])
+
+                next_idx -= 1
+
+            if not ret_values:
+                past_ret.append(np.nan)
+            else:
+                average_return = sum(ret_values) / len(ret_values)
+                past_ret.append(1 - (average_return / pmax))
+        else:
+            past_ret.append(np.nan)
+
+    return past_ret
+
 
 
 # -------------------------------- Volume Mode ------------------------------------------------------
@@ -715,8 +808,8 @@ def generate_vol_lambda(df, delta1, delta2):
     for i in df.index:
         data = df.iloc[i]
 
-        # Skip calculating Lambda for quotes and append NaN instead
-        if data['Is_Quote']:
+        # Skip calculating Lambda for invalid quotes and append NaN instead
+        if data['Is_Quote'] and data['Valid_Quotes'] == False:
             vol_Lambda.append(np.nan)
             continue
 
@@ -770,7 +863,7 @@ def generate_vol_lobImbalance(df, delta1, delta2):
         data = df.iloc[i]
 
         # Skip calculating LOB Imbalance for quotes and append NaN instead
-        if data['Is_Quote']:
+        if data['Is_Quote'] and data['Valid_Quotes'] == False:
             vol_LobImbalance.append(np.nan)
             continue
         
@@ -826,7 +919,7 @@ def generate_vol_txnImbalance(df, delta1, delta2):
         data = df.iloc[i]
 
         # Skip calculating txn imbalance for quotes and append NaN instead
-        if data['Is_Quote']:
+        if data['Is_Quote'] and data['Valid_Quotes'] == False:
             vol_TxnImbalance.append(np.nan)
             continue
         
@@ -874,7 +967,7 @@ def generate_vol_pastReturn(df, delta1, delta2):
         data = df.iloc[i]
 
         # Skip calculating past return for quotes and append NaN instead
-        if data['Is_Quote']:
+        if data['Is_Quote'] and data['Valid_Quotes'] == False:
             vol_PastReturn.append(np.nan)
             continue
         
@@ -932,10 +1025,10 @@ def parent_generator_ret_imb(df, deltas, mode='calendar'):
     
     # Mapping of feature generation functions for transaction mode
     trans_feature_mapping = {
-        'Lambda': generate_vol_lambda,
+        'Lambda': generate_trans_Lambda,
         'LobImbalance': generate_trans_LobImbalance,
         'TxnImbalance': generate_trans_TxnImbalance,
-        'PastReturn': generate_cal_PastReturn
+        'PastReturn': generate_trans_PastReturn
     }
     
     # Mapping of feature generation functions for volume mode
