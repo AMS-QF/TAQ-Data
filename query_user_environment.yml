@@ -28,6 +28,7 @@ dependencies:
   -  mkl_fft
   -  mkl_random
   -  ncurses
+  -  nb_conda_kernels
   -  numpy-base
   -  openssl
   -  packaging
