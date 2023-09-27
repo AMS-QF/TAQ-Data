@@ -7,7 +7,6 @@ channels:
 - defaults
 dependencies:
   -  _libgcc_mutex
-  -  _openmp_mutex
   -  blas
   -  bzip2
   -  ca-certificates
@@ -18,16 +17,11 @@ dependencies:
   -  idna
   -  intel-openmp
   -  korean_lunar_calendar
-  -  ld_impl_linux-64
   -  libffi
-  -  libgcc-ng
-  -  libgomp
-  -  libstdcxx-ng
-  -  libuuid
   -  mkl
   -  mkl_fft
   -  mkl_random
-  -  ncurses
+  -  nb_conda_kernels
   -  numpy-base
   -  openssl
   -  packaging
@@ -41,10 +35,11 @@ dependencies:
   -  python
   -  python-dateutil
   -  python_abi
+  -  python-dotenv
   -  pytz
-  -  readline
   -  requests
   -  setuptools
+  -  scp
   -  six
   -  sqlite
   -  tk
