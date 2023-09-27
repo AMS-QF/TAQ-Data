@@ -1068,5 +1068,5 @@ def parent_generator_ret_imb(df, deltas, mode='calendar'):
 
 if __name__ == "__main__":
     print('Test generator functions')
-    df = pd.read_csv("testData/PreparedData.csv")
+    # df = pd.read_csv("testData/PreparedData.csv")
     # generateVolumeAll(df, M = 'calendar')
