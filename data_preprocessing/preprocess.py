@@ -1,3 +1,5 @@
+"""Depreciated cleaning scripts, use pipelines instead"""
+
 from datetime import datetime, timedelta
 
 import pandas as pd
@@ -93,7 +95,6 @@ def clean_quotes(quotes, drop_after_hours=True):
         return quotes
 
 
-# grossman transcnction costs
 def chunk_clean(path, quotes=True):
     counter = 1
 
