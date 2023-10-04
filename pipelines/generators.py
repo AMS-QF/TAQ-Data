@@ -4,6 +4,7 @@ from datetime import timedelta
 from sortedcollections import OrderedSet
 import time
 import sys
+from data_preprocessing import get_data
 sys.path.insert(1, '../testData')
 
 
@@ -982,6 +983,436 @@ def generate_vol_pastReturn(df, delta1, delta2):
     return vol_PastReturn
 
 
+def getPreviousTimeStamp(df, t):
+    """
+       This is a utility function to get the previous timestamp of t for trades
+
+       Parameters:
+       ----------
+       df : pandas.DataFrame
+            DataFrame containing the data.
+       t : pandas.Timedelta
+           Participant time stamp.
+
+       Returns:
+       -------
+       TimeStamp
+           Time stamp before t in df.
+
+    """
+
+    sorted_time_stamps = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].sort_values()
+    return sorted_time_stamps.loc[df['Participant_Timestamp_f'] < t].iloc[-1]
+
+
+def getPreviousTimeStampIndex(df, t):
+    """
+       This is a utility function to get the previous timestamp index of t for trades
+
+       Parameters:
+       ----------
+       df : pandas.DataFrame
+            DataFrame containing the data.
+       t : pandas.Timedelta
+           Participant time stamp.
+
+       Returns:
+       -------
+       TimeStamp
+           Time stamp index before t in df.
+       -1
+           If t is the first timestamp in the dataframe
+
+    """
+
+    txn_df = df[df['Is_Quote'] == False]
+    sorted_time_stamps = txn_df['Participant_Timestamp_f'].sort_values()
+    ts_less_than_t = sorted_time_stamps[sorted_time_stamps < t]
+    previous_ts = -1
+    if len(ts_less_than_t) > 0:
+        previous_ts = sorted_time_stamps.loc[txn_df['Participant_Timestamp_f'] < t].index[-1]
+    return previous_ts
+
+
+def getPriceForPreviousTimeStamp(df, t):
+    """
+           This is a utility function to get price of the previous timestamp of t for trades
+
+           Parameters:
+           ----------
+           df : pandas.DataFrame
+                DataFrame containing the data.
+           t : pandas.Timedelta
+               Participant time stamp.
+
+           Returns:
+           -------
+           Float
+               Price at Time stamp before t in df.
+           Nan
+               If t is the first timestamp in the dataframe
+
+        """
+
+    s = getPreviousTimeStampIndex(df, t)
+    if (s > -1):
+        return df[df['Is_Quote'] == False].loc[s, 'Trade_Price']
+    else:
+        return float("nan")
+
+
+def getPriceForTimeStamp(df, t):
+    """
+           This is a utility function to get price of the timestamp of t for trades
+
+           Parameters:
+           ----------
+           df : pandas.DataFrame
+                DataFrame containing the data.
+           t : pandas.Timedelta
+               Participant time stamp.
+
+           Returns:
+           -------
+           Float
+               Price at Time stamp at t in df.
+           Nan
+               If t is not present in the dataframe
+
+        """
+
+    participant_timestamps = df[df['Participant_Timestamp_f'] == t]['Participant_Timestamp_f']
+    t_index = -1
+    if len(participant_timestamps) > 0:
+        t_index = participant_timestamps.index[-1]
+    if t_index == -1:
+        return float("nan")
+    price_t = df.loc[t_index, 'Trade_Price']
+    return price_t
+
+
+def getLookBackIntervalForCalendar_t(df, t, delta1, delta2):
+    """
+           Function to get lookback interval for calendar mode given T, delta1 and delta2
+
+           Parameters:
+           ----------
+           df : pandas.DataFrame
+                DataFrame containing the data.
+           t :  pandas.Timedelta
+                Participant time stamp.
+           delta1 : pandas.Timedelta
+                    The first time delta (offset) to calculate the time window.
+           delta2 : pandas.Timedelta
+                    The second time delta (offset) to calculate the time window.
+           Returns:
+           -------
+           DataFrame
+                    Dataframe containing required timestamps
+    """
+
+    return df[df['Participant_Timestamp_f'].between(t - delta2, t - delta1, inclusive="right")]
+
+
+def getLookBackInterval_t(df, t, delta1, delta2, mode):
+    """
+           Function to get lookback interval for given mode given T, delta1 and delta2
+
+           Parameters:
+           ----------
+           df : pandas.DataFrame
+                DataFrame containing the data.
+           t :  pandas.Timedelta
+                Participant time stamp.
+           delta1 : pandas.Timedelta
+                    The first time delta (offset) to calculate the required window.
+           delta2 : pandas.Timedelta
+                    The second time delta (offset) to calculate the required window.
+           Returns:
+           -------
+           DataFrame
+                    Dataframe containing required timestamps
+        """
+    if mode == 'calendar':
+        return getLookBackIntervalForCalendar_t(df, t, delta1, delta2)
+    elif mode == 'transaction':
+        return df.shift(delta1).rolling(delta2 - delta1)
+    else:
+        #This needs to be changed
+        return df.shift(delta1).rolling(delta2 - delta1)
+
+
+def getOutStandingNumberOfShares(symbols, startDate, endDate):
+    """
+        This function gets the Outstanding number of shares from the database.
+
+        Parameters:
+        ----------
+        symbol : str
+            stock for which number of shares is queried.
+        startDate : str
+            start date for query.
+        endDate : str
+            end date for query.
+
+        Returns:
+        -------
+        list
+            A list containing number of outstanding shares for each date between start date and end date.
+    """
+    return get_data.get_ref(symbols, startDate, endDate, 100)
+
+
+def getTurnover(volumeAll, t, delta1, delta2, startDate, endDate, symbol):
+    outstandingShares = getOutStandingNumberOfShares(symbol, startDate, endDate)
+    return outstandingShares
+
+
+# This is the function to calculate log(P_txn/P_txn_Lt)*log(P_txn_Lt/P_txn_LLt) in lookback interval
+def getLogPricesProduct(df_txn, interval, t):
+    participant_timestamps = df_txn[df_txn['Participant_Timestamp_f'] == t]['Participant_Timestamp_f']
+    t_index = -1
+    if (len(participant_timestamps) > 0):
+        t_index = participant_timestamps.index[-1]
+    if (t_index == -1):
+        return float("nan")
+    # price of transaction at time t
+    price_t = df_txn.loc[t_index, 'Trade_Price']
+    # Transaction price for transaction before t
+    price_lt = getPriceForPreviousTimeStamp(df_txn, t)
+    lt_index = getPreviousTimeStampIndex(df_txn, t)
+    # If t is the first timestamp in the data, return -1
+    if (lt_index == -1):
+        return float("nan")
+    lt = df_txn.loc[lt_index, 'Participant_Timestamp_f']
+    price_llt = getPriceForPreviousTimeStamp(df_txn, lt)
+    # If Lt is the first timestamp in the data, return -1
+    if (math.isnan(price_lt) or math.isnan(price_llt)):
+        return float("nan")
+    return math.log(price_t / price_lt) * math.log(price_lt / price_llt)
+
+
+def getLogPricesForAutoCovForLookBackInterval(df_txn, df_lb, T):
+    interval = df_lb[df_lb['Is_Quote'] == False]
+    print("The transaction interval is")
+    print(interval)
+    means_df = interval['Participant_Timestamp_f'].apply(
+        lambda t: getLogPricesProduct(df_txn, interval, t) if math.isnan(
+            getLogPricesProduct(df_txn, interval, t)) == False else None).mean()
+    return means_df
+
+
+# We need to get transactions from the lookback interval for every T and then take average of log(P_txn/P_txn_Lt)*log(P_txn_Lt/P_txn_LLt)
+def getAutoCovariance(df, delta1, delta2, mode):
+    autocovariances = []
+    df_txn = df[df['Is_Quote'] == False]
+    for i in df.index:
+        if df.at[i, 'Is_Quote']:
+            autocovariances.append(np.nan)
+            continue
+        t = df.iloc[i]['Participant_Timestamp_f']
+        lb_interval = getLookBackInterval_t(df, t, delta1, delta2, mode)
+        auto_cov_t = getLogPricesForAutoCovForLookBackInterval(df_txn, lb_interval, t)
+        autocovariances.append(auto_cov_t)
+    return autocovariances
+
+
+def getBestPrice(prices, order_boolean):
+    sorted_prices = prices.sort_values(ascending=order_boolean)
+    return sorted_prices.iloc[-1]
+
+
+# This function is used for calculating average proportional nominal spread
+# which will be used to calculate quoted spread
+def getPropNominalSpread(df, t):
+    df_quotes = df[df['Is_Quote'] == True]
+    # best_ask_price = df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Offer_Price'].iloc[-1]
+    # best_bid_price = df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Bid_Price'].iloc[-1]
+    # ask_prices_t = df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Offer_Price']
+    # bid_prices_t = df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Bid_Price']
+    # sorted_ask_prices = ask_prices_t.sort_values()
+    # sorted_bid_prices = bid_prices_t.sort_values()
+    # best_ask_price = sorted_ask_prices.iloc[-1]
+    # best_bid_price = sorted_bid_prices.iloc[-1]
+    best_ask_price = getBestPrice(df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Offer_Price'], False)
+    best_bid_price = getBestPrice(df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Bid_Price'], True)
+    mid_price = (best_ask_price + best_bid_price) / 2
+    return (best_ask_price - best_bid_price) / mid_price
+
+
+# new function
+def getQuotedSpread(df, delta1, delta2, mode):
+    quotedSpreads = []
+    df_quotes = df[df['Is_Quote'] == True]
+    for i in df.index:
+        if not df.at[i, 'Is_Quote']:
+            quotedSpreads.append(np.nan)
+            continue
+        t = df.at[i, 'Participant_Timestamp_f']
+        lb_interval = getLookBackInterval_t(df_quotes, t, delta1, delta2, mode)
+        quoted_spread = lb_interval['Participant_Timestamp_f'].apply(
+            lambda t: getPropNominalSpread(lb_interval, t)).mean()
+        quotedSpreads.append(quoted_spread)
+    return quotedSpreads
+
+
+def getClosestQuoteTimeToTxn(df, t):
+    sorted_time_stamps = df[df['Is_Quote'] == True]['Participant_Timestamp_f'].sort_values()
+    print(len(sorted_time_stamps[sorted_time_stamps < t]))
+    if (len(sorted_time_stamps[sorted_time_stamps < t]) == 0):
+        return None
+    else:
+        return sorted_time_stamps[sorted_time_stamps < t].iloc[-1]
+
+
+def getMidPrice(df, t):
+    df_quotes = df[df['Is_Quote'] == True]
+    best_ask_price = getBestPrice(df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Offer_Price'], False)
+    best_bid_price = getBestPrice(df_quotes[df_quotes['Participant_Timestamp_f'] == t]['Bid_Price'], True)
+    mid_price = (best_ask_price + best_bid_price) / 2
+    return mid_price
+
+
+# This function is used for calculating the numerator for effective spread
+def effectiveSpreadUtil(df, lb_interval_txn, t):
+    price_t = getPriceForTimeStamp(lb_interval_txn, t)
+    # Getting time for nearest quote
+    t_quote = getClosestQuoteTimeToTxn(df, t)
+    if (t_quote == None):
+        return float("nan")
+    mid_price_t = getMidPrice(df, t_quote)
+    direction_t = df[df['Participant_Timestamp_f'] == t]['Trade_Sign'].iloc[-1]
+    volume_t = df[df['Participant_Timestamp_f'] == t]['Trade_Volume'].iloc[-1]
+    return math.log(price_t / mid_price_t) * direction_t * volume_t * price_t
+
+
+def getEffectiveSpread(df, delta1, delta2, mode):
+    effectiveSpreads = []
+    for i in df.index:
+        if df.at[i, 'Is_Quote']:
+            effectiveSpreads.append(np.nan)
+            continue
+        t = df.at[i, 'Participant_Timestamp_f']
+        lb_interval = getLookBackInterval_t(df, t, delta1, delta2, mode)
+        lb_interval_txn = lb_interval[lb_interval['Is_Quote'] == False]
+        effective_spread_num = lb_interval_txn['Participant_Timestamp_f'].apply(
+            lambda t: effectiveSpreadUtil(df, lb_interval_txn, t)).sum()
+        effective_spread_denominator = lb_interval_txn['Participant_Timestamp_f'].apply(
+            lambda t: lb_interval_txn[lb_interval_txn['Participant_Timestamp_f'] == t]['Trade_Volume'].iloc[
+                          -1] * getPriceForTimeStamp(lb_interval_txn, t)).sum()
+        effectiveSpreads.append(effective_spread_num / effective_spread_denominator)
+    return effectiveSpreads
+
+
+def generate_cal_Turnover(df, delta1, delta2):
+    """
+           Generate Turnover for trades in the given DataFrame with Calendar mode.
+
+           This function calculates the turnover for trades in the provided DataFrame (`df`).
+           The calculation is based on the specified columns representing the previous index and current index of each trade.
+
+           Parameters:
+           ----------
+           df : pandas.DataFrame
+                DataFrame containing the data.
+           delta1 : pandas.Timedelta
+                The first time delta (offset) to calculate the time window.
+           delta2 : pandas.Timedelta
+                The second time delta (offset) to calculate the time window.
+
+           Returns:
+           -------
+           list
+               A list containing the turnover values for trades.
+
+           """
+
+    calVolumeAll = generate_cal_VolumeAll(df, delta1, delta2)
+    cal_turnovers = []
+    for i in df.index:
+        if df.at[i, 'Is_Quote']:
+            cal_turnovers.append(np.nan)
+            continue
+        t = df.at[i, 'Participant_Timestamp_f']
+        # lb_interval = getLookBackInterval_t(df, t, delta1, delta2, 'calendar')
+        # lb_interval_txn = lb_interval[lb_interval['Is_Quote'] == False]
+        start_date = df.at[i, 'Date']
+        end_date = df.at[i, 'Date']
+        symbol = df.at[i, 'Symbol']
+        s = getOutStandingNumberOfShares(symbol, start_date, end_date)
+
+    # S is the shares outstanding
+
+    return calVolumeAll / s
+
+
+def generate_cal_AutoCov(df, delta1, delta2):
+    return getAutoCovariance(df, delta1, delta2, 'calendar')
+
+
+def generate_cal_QuotedSpread(df, delta1, delta2):
+    return getQuotedSpread(df, delta1, delta2, 'calendar')
+
+
+def generate_cal_EffectiveSpread(df, delta1, delta2):
+    return getEffectiveSpread(df, delta1, delta2, 'calendar')
+
+
+def generate_trans_Turnover(df, delta1, delta2):
+    """
+               Generate Turnover for trades in the given DataFrame with transaction mode.
+
+               This function calculates the turnover for trades in the provided DataFrame (`df`).
+               The calculation is based on the specified columns representing the previous index and current index of each trade.
+
+               Parameters:
+               ----------
+               df : pandas.DataFrame
+                    DataFrame containing the data.
+               delta1 : pandas.Timedelta
+                    The first time delta (offset) to calculate the start of the rolling window.
+               delta2 : pandas.Timedelta
+                    The second time delta (offset) to calculate the end of the rolling window.
+
+               Returns:
+               -------
+               list
+                   A list containing the turnover values for trades.
+
+               """
+
+    transVolumeAll = generate_trans_VolumeAll(df, delta1, delta2)
+    trans_turnovers = []
+    for i in df.index:
+        if df.at[i, 'Is_Quote']:
+            trans_turnovers.append(np.nan)
+            continue
+        t = df.at[i, 'Participant_Timestamp_f']
+        # lb_interval = getLookBackInterval_t(df, t, delta1, delta2, 'calendar')
+        # lb_interval_txn = lb_interval[lb_interval['Is_Quote'] == False]
+        start_date = df.at[i, 'Date']
+        end_date = df.at[i, 'Date']
+        symbol = df.at[i,'Symbol']
+        s = getOutStandingNumberOfShares(symbol, start_date, end_date)
+
+    # S is the shares outstanding
+    return transVolumeAll / s
+
+
+def generate_trans_AutoCov(df, delta1, delta2):
+    return getAutoCovariance(df, delta1, delta2, 'transaction')
+
+
+def generate_trans_QuotedSpread(df, delta1, delta2):
+    return getQuotedSpread(df, delta1, delta2, 'transaction')
+
+
+def generate_trans_EffectiveSpread(df, delta1, delta2):
+    return getEffectiveSpread(df, delta1, delta2, 'transaction')
+
+
+
+
 # --------------------------------PARENT GENERATOR/WRAPPER FUNCTION ----------------------------------------------
 
 def parent_generator_ret_imb(df, deltas, mode='calendar'):
@@ -1020,7 +1451,11 @@ def parent_generator_ret_imb(df, deltas, mode='calendar'):
         'Lambda': generate_cal_Lambda,
         'LobImbalance': generate_cal_LobImbalance,
         'TxnImbalance': generate_cal_TxnImbalance,
-        'PastReturn': generate_cal_PastReturn
+        'PastReturn': generate_cal_PastReturn,
+        'Turnover': generate_cal_Turnover,
+        'AutoCov': generate_cal_AutoCov,
+        'QuotedSpread': generate_cal_QuotedSpread,
+        'EffectiveSpread': generate_cal_EffectiveSpread
     }
     
     # Mapping of feature generation functions for transaction mode
@@ -1028,7 +1463,11 @@ def parent_generator_ret_imb(df, deltas, mode='calendar'):
         'Lambda': generate_trans_Lambda,
         'LobImbalance': generate_trans_LobImbalance,
         'TxnImbalance': generate_trans_TxnImbalance,
-        'PastReturn': generate_trans_PastReturn
+        'PastReturn': generate_trans_PastReturn,
+        'Turnover': generate_trans_Turnover,
+        'AutoCov': generate_trans_AutoCov,
+        'QuotedSpread': generate_trans_QuotedSpread,
+        'EffectiveSpread': generate_trans_EffectiveSpread
     }
     
     # Mapping of feature generation functions for volume mode
@@ -1036,7 +1475,11 @@ def parent_generator_ret_imb(df, deltas, mode='calendar'):
         'Lambda': generate_vol_lambda,
         'LobImbalance': generate_vol_lobImbalance,
         'TxnImbalance': generate_vol_txnImbalance,
-        'PastReturn': generate_vol_pastReturn
+        'PastReturn': generate_vol_pastReturn,
+        'Turnover': generate_vol_Turnover,
+        'AutoCov': generate_vol_AutoCov,
+        'QuotedSpread': generate_vol_QuotedSpread,
+        'EffectiveSpread': generate_vol_EffectiveSpread
     }
     
     # Select the appropriate feature mapping based on mode
