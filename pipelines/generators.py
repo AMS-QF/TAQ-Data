@@ -1161,10 +1161,11 @@ def getOutStandingNumberOfShares(symbols, startDate, endDate):
         list
             A list containing number of outstanding shares for each date between start date and end date.
     """
+    #Take the shares outstanding from this
     return get_data.get_ref(symbols, startDate, endDate, 100)
 
 
-def getTurnover(volumeAll, t, delta1, delta2, startDate, endDate, symbol):
+def getTurnover(startDate, endDate, symbol):
     outstandingShares = getOutStandingNumberOfShares(symbol, startDate, endDate)
     return outstandingShares
 
@@ -1336,6 +1337,7 @@ def generate_cal_Turnover(df, delta1, delta2):
 
     calVolumeAll = generate_cal_VolumeAll(df, delta1, delta2)
     cal_turnovers = []
+    total_outstanding_shares = 0
     for i in df.index:
         if df.at[i, 'Is_Quote']:
             cal_turnovers.append(np.nan)
@@ -1346,11 +1348,14 @@ def generate_cal_Turnover(df, delta1, delta2):
         start_date = df.at[i, 'Date']
         end_date = df.at[i, 'Date']
         symbol = df.at[i, 'Symbol']
-        s = s + getOutStandingNumberOfShares([symbol], start_date, end_date)
+        s = getOutStandingNumberOfShares([symbol], start_date, end_date)
+        total_outstanding_shares = total_outstanding_shares + s
+        #Need correct way of indexing
+        #cal_turnovers.append(calVolumeAll[i] / s)
 
     # S is the shares outstanding
-
-    return calVolumeAll / s
+    #return cal_turnovers or cal_volumeall/total_outstanding_shares
+    return calVolumeAll / total_outstanding_shares
 
 
 def generate_cal_AutoCov(df, delta1, delta2):
