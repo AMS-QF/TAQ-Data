@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 import numpy as np
 from datetime import timedelta
@@ -1002,7 +1003,7 @@ def getPreviousTimeStamp(df, t):
     """
 
     sorted_time_stamps = df[df['Is_Quote'] == False]['Participant_Timestamp_f'].sort_values()
-    return sorted_time_stamps.loc[df['Participant_Timestamp_f'] < t].iloc[-1]
+    return sorted_time_stamps[df['Participant_Timestamp_f'] < t].iloc[-1]
 
 
 def getPreviousTimeStampIndex(df, t):
@@ -1179,13 +1180,18 @@ def getLogPricesProduct(df_txn, interval, t):
     # price of transaction at time t
     price_t = df_txn.loc[t_index, 'Trade_Price']
     # Transaction price for transaction before t
-    price_lt = getPriceForPreviousTimeStamp(df_txn, t)
+    #price_lt = getPriceForPreviousTimeStamp(df_txn, t)
     lt_index = getPreviousTimeStampIndex(df_txn, t)
     # If t is the first timestamp in the data, return -1
     if (lt_index == -1):
         return float("nan")
     lt = df_txn.loc[lt_index, 'Participant_Timestamp_f']
-    price_llt = getPriceForPreviousTimeStamp(df_txn, lt)
+    price_lt = df_txn.loc[lt_index, 'Trade_Price']
+    llt_index = getPreviousTimeStampIndex(df_txn, lt)
+    if (llt_index == -1):
+        return float("nan")
+    llt = df_txn.loc[llt_index, 'Participant_Timestamp_f']
+    price_llt = df_txn.loc[llt_index, 'Trade_Price']
     # If Lt is the first timestamp in the data, return -1
     if (math.isnan(price_lt) or math.isnan(price_llt)):
         return float("nan")
@@ -1194,11 +1200,12 @@ def getLogPricesProduct(df_txn, interval, t):
 
 def getLogPricesForAutoCovForLookBackInterval(df_txn, df_lb, T):
     interval = df_lb[df_lb['Is_Quote'] == False]
-    print("The transaction interval is")
-    print(interval)
+    #print("The transaction interval is")
+    #print(interval)
     means_df = interval['Participant_Timestamp_f'].apply(
         lambda t: getLogPricesProduct(df_txn, interval, t) if math.isnan(
             getLogPricesProduct(df_txn, interval, t)) == False else None).mean()
+    #Here None or NaN
     return means_df
 
 
@@ -1339,7 +1346,7 @@ def generate_cal_Turnover(df, delta1, delta2):
         start_date = df.at[i, 'Date']
         end_date = df.at[i, 'Date']
         symbol = df.at[i, 'Symbol']
-        s = getOutStandingNumberOfShares(symbol, start_date, end_date)
+        s = s + getOutStandingNumberOfShares([symbol], start_date, end_date)
 
     # S is the shares outstanding
 
