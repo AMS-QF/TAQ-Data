@@ -3,7 +3,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class FeatureGeneration(BaseEstimator, TransformerMixin):
-    def __init__(self, params={"return_span": 1, "clock_mode": "calendar", "deltas": [[1, 2]]}):
+    def __init__(self, params=None):
         self.params = params
         return
 
