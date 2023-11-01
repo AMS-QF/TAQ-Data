@@ -7,3 +7,5 @@ pipelines/__pycache__/
 personal_research/
 HFT_Research/
 .DS_Store
+spark_local
+testData
