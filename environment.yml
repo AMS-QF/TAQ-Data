@@ -15,6 +15,7 @@ dependencies:
   -  exchange-calendars
   -  idna
   -  intel-openmp
+  -  ipykernel
   -  korean_lunar_calendar
   -  libffi
   -  matplotlib
