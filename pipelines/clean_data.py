@@ -24,6 +24,7 @@ class CleanData(BaseEstimator, TransformerMixin):
             inplace=True,
             errors="ignore",
         )
+    
         X["Participant_Timestamp"] = self.part_timestamp
         X.index = self.part_timestamp
 
