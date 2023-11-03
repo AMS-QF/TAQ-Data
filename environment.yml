@@ -43,6 +43,8 @@ dependencies:
   -  setuptools
   -  scp
   -  six
+  -  sortedcollections
+  -  scikit-learn
   -  sqlite
   -  tk
   -  toolz
@@ -63,4 +65,5 @@ dependencies:
     - mkl-service
     - numpy
     - pandas
+    - pyarrow
 prefix: /home/jbohne/anaconda3/envs

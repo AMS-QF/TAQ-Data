@@ -18,10 +18,13 @@ Instructions for access through the SQL UI DBeaver are  included in Accessing th
     db_pass=
 ```
 
-Conda Tips
+### Conda Tips
 - `environment.yml` is a file that contains all the dependencies for the conda environment
     - Will have to update path name on this yml file
 - `query_user_environment.yml` is a file that contains all the dependencies for the conda environment for the query user on the server
+
+### Sample Data
+Sample data of 1000 trade and quote samples are included within the `sample_data` directory. The sample data is stored as gzip compressed csv files. All tutorials  will use this sample data.
 
 Feel free to create a directory for your own research called `personal_research` in the root directory of the repo. This directory is ignored by git and can be used to store your own scripts and data
         
