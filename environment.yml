@@ -24,6 +24,7 @@ dependencies:
   -  mkl_random
   -  nb_conda_kernels
   -  numpy-base
+  -  numba
   -  openssl
   -  packaging
   -  pandas_market_calendars
