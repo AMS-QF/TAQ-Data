@@ -22,6 +22,7 @@ Instructions for access through the SQL UI DBeaver are  included in Accessing th
 - `environment.yml` is a file that contains all the dependencies for the conda environment
     - Will have to update path name on this yml file
 - `query_user_environment.yml` is a file that contains all the dependencies for the conda environment for the query user on the server
+- To install datatable it is required to install from source repo using `pip install git+https://github.com/h2oai/datatable`
 
 ### Sample Data
 Sample data of 1000 trade and quote samples are included within the `sample_data` directory. The sample data is stored as gzip compressed csv files. All tutorials  will use this sample data.
