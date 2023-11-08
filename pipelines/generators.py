@@ -1120,7 +1120,7 @@ def getLookBackIntervalForCalendar_t(df, t, delta1, delta2):
     return df[df["Participant_Timestamp_f"].between(t - delta2, t - delta1, inclusive="right")]
 
 
-def getLookBackInterval_t(df, t, delta1, delta2, mode):
+def getLookBackInterval_t(df, index, t, delta1, delta2, mode):
     """
     Function to get lookback interval for given mode given T, delta1 and delta2
 
@@ -1143,9 +1143,14 @@ def getLookBackInterval_t(df, t, delta1, delta2, mode):
         return getLookBackIntervalForCalendar_t(df, t, delta1, delta2)
     elif mode == "transaction":
         return df.shift(delta1).rolling(delta2 - delta1)
+    elif mode == "volume":
+        spanIdx1, spanIdx2 = check_volume_span(df, delta1, delta2)
+        # Get the current and previous indices for the volume span
+        cur, pre = df.at[index,spanIdx1], df.at[index,spanIdx2]
+        # Return the df containing the look back interval corresponding to volume mode
+        return df.iloc[pre: cur + 1]
     else:
-        # This needs to be changed
-        return df.shift(delta1).rolling(delta2 - delta1)
+        return None
 
 
 def getOutStandingNumberOfShares(symbols, reference_data, startDate, endDate):
@@ -1198,7 +1203,7 @@ def getLogPricesProduct(df_txn, interval, t):
     llt_index = getPreviousTimeStampIndex(df_txn, lt)
     if llt_index == -1:
         return float("nan")
-    df_txn.loc[llt_index, "Participant_Timestamp_f"]
+    #df_txn.loc[llt_index, "Participant_Timestamp_f"]
     price_llt = df_txn.loc[llt_index, "Trade_Price"]
     # If Lt is the first timestamp in the data, return -1
     if math.isnan(price_lt) or math.isnan(price_llt):
@@ -1232,7 +1237,7 @@ def getAutoCovariance(df, delta1, delta2, mode):
             autocovariances.append(np.nan)
             continue
         t = df.iloc[i]["Participant_Timestamp_f"]
-        lb_interval = getLookBackInterval_t(df, t, delta1, delta2, mode)
+        lb_interval = getLookBackInterval_t(df, i, t, delta1, delta2, mode)
         auto_cov_t = getLogPricesForAutoCovForLookBackInterval(df_txn, lb_interval, t)
         autocovariances.append(auto_cov_t)
     return autocovariances
@@ -1270,7 +1275,7 @@ def getQuotedSpread(df, delta1, delta2, mode):
             quotedSpreads.append(np.nan)
             continue
         t = df.at[i, "Participant_Timestamp_f"]
-        lb_interval = getLookBackInterval_t(df_quotes, t, delta1, delta2, mode)
+        lb_interval = getLookBackInterval_t(df_quotes, i, t, delta1, delta2, mode)
         quoted_spread = (
             lb_interval["Participant_Timestamp_f"].apply(lambda t: getPropNominalSpread(lb_interval, t)).mean()
         )
@@ -1315,7 +1320,7 @@ def getEffectiveSpread(df, delta1, delta2, mode):
             effectiveSpreads.append(np.nan)
             continue
         t = df.at[i, "Participant_Timestamp_f"]
-        lb_interval = getLookBackInterval_t(df, t, delta1, delta2, mode)
+        lb_interval = getLookBackInterval_t(df, i, t, delta1, delta2, mode)
         lb_interval_txn = lb_interval[lb_interval["Is_Quote"] == False]
         effective_spread_num = (
             lb_interval_txn["Participant_Timestamp_f"]
@@ -1365,8 +1370,6 @@ def generate_cal_Turnover(df, delta1, delta2):
             cal_turnovers.append(np.nan)
             continue
         df.at[i, "Participant_Timestamp_f"]
-        # lb_interval = getLookBackInterval_t(df, t, delta1, delta2, 'calendar')
-        # lb_interval_txn = lb_interval[lb_interval['Is_Quote'] == False]
         start_date = df.at[i, "Date"]
         end_date = df.at[i, "Date"]
         symbol = df.at[i, "Symbol"]
@@ -1421,9 +1424,6 @@ def generate_trans_Turnover(df, delta1, delta2):
         if df.at[i, "Is_Quote"]:
             trans_turnovers.append(np.nan)
             continue
-        df.at[i, "Participant_Timestamp_f"]
-        # lb_interval = getLookBackInterval_t(df, t, delta1, delta2, 'calendar')
-        # lb_interval_txn = lb_interval[lb_interval['Is_Quote'] == False]
         start_date = df.at[i, "Date"]
         end_date = df.at[i, "Date"]
         symbol = df.at[i, "Symbol"]
