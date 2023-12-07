@@ -39,6 +39,7 @@ dependencies:
   -  python-dateutil
   -  python_abi
   -  python-dotenv
+  -  pytorch
   -  pytz
   -  requests
   -  setuptools
