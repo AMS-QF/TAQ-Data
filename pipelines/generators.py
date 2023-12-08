@@ -1153,28 +1153,15 @@ def getLookBackInterval_t(df, index, t, delta1, delta2, mode):
         return None
 
 
-def getOutStandingNumberOfShares(symbols, reference_data, startDate, endDate):
-    """
-    Requires processing of reference data
+def getOutStandingNumberOfShares(symbol, start_date, end_date, ref_data):
+    sr1 = pd.to_datetime(ref_data['Date']).dt.date
+    dates = sr1.apply(lambda x: x.strftime('%Y-%m-%d'))
+    ref_data['dates'] = dates
+    ref_data = ref_data[ref_data['dates']>=start_date]
+    ref_data = ref_data[ref_data['dates']<=end_date]
+    ref_data = ref_data[ref_data['Symbol']==symbol]
+    return ref_data['Shares_Outstanding'].sum()
 
-    This function gets the Outstanding number of shares from the database.
-
-    Parameters:
-    ----------
-    symbol : str
-        stock for which number of shares is queried.
-    startDate : str
-        start date for query.
-    endDate : str
-        end date for query.
-
-    Returns:
-    -------
-    list
-        A list containing number of outstanding shares for each date between start date and end date.
-    """
-    # Take the shares outstanding from this
-    return 0
 
 
 def getTurnover(startDate, endDate, symbol):
@@ -1241,6 +1228,47 @@ def getAutoCovariance(df, delta1, delta2, mode):
         auto_cov_t = getLogPricesForAutoCovForLookBackInterval(df_txn, lb_interval, t)
         autocovariances.append(auto_cov_t)
     return autocovariances
+
+def getLogPricesProduct2(df_txn, interval, i):
+    price_t = df_txn["Trade_Price"][i]
+    loc = df_txn.index.get_loc(i)
+    lt_index = loc -1
+    llt_index = loc -2
+    if(loc<2):
+         return None
+    df_array = df_txn["Trade_Price"].to_numpy()
+    price_lt = df_array[lt_index]
+    price_llt = df_array[llt_index]
+    return math.log(price_t / price_lt) * math.log(price_lt / price_llt)
+
+def getLogPricesForAutoCovForLookBackInterval2(df_txn, interval, T):
+    #interval = df_lb[df_lb["Is_Quote"] == False]
+    means_df = (
+        interval.index.to_series()
+        .apply(
+            lambda i: getLogPricesProduct2(df_txn, interval, i)
+        )
+        .mean()
+    )
+    # Here None or NaN
+    return means_df
+
+
+# We need to get transactions from the lookback interval for every T and then take average of log(P_txn/P_txn_Lt)*log(P_txn_Lt/P_txn_LLt)
+def getAutoCovariance2(df, delta1, delta2, mode):
+    autocovariances = []
+    df_txn = df[df["Is_Quote"] == False]
+    for i in df.index:
+        if df.at[i, "Is_Quote"]:
+            autocovariances.append(np.nan)
+            continue
+        t = df.at[i,"Participant_Timestamp_f"]
+        lb_interval = getLookBackInterval_t(df_txn, i, t, delta1, delta2, mode)
+        auto_cov_t = getLogPricesForAutoCovForLookBackInterval2(df_txn, lb_interval, t)
+        autocovariances.append(auto_cov_t)
+    return autocovariances
+
+
 
 
 def getBestPrice(prices, order_boolean):
@@ -1339,12 +1367,11 @@ def getEffectiveSpread(df, delta1, delta2, mode):
     return effectiveSpreads
 
 
-def generate_cal_Turnover(df, delta1, delta2):
+def generate_cal_Turnover(df, delta1, delta2, ref_data):
     """
     Generate Turnover for trades in the given DataFrame with Calendar mode.
 
     This function calculates the turnover for trades in the provided DataFrame (`df`).
-    The calculation is based on the specified columns representing the previous index and current index of each trade.
 
     Parameters:
     ----------
@@ -1354,6 +1381,8 @@ def generate_cal_Turnover(df, delta1, delta2):
          The first time delta (offset) to calculate the time window.
     delta2 : pandas.Timedelta
          The second time delta (offset) to calculate the time window.
+    ref_data: pandas.DataFrame
+            DataFrame containing the relevant reference data.
 
     Returns:
     -------
@@ -1362,22 +1391,25 @@ def generate_cal_Turnover(df, delta1, delta2):
 
     """
 
-    calVolumeAll = generate_cal_VolumeAll(df, delta1, delta2)
+    calVolumeAll = df["Participant_Timestamp_f"].apply(
+        lambda t: sum(
+            df[df["Participant_Timestamp_f"].between(t - delta2, t - delta1, inclusive="right")]["Trade_Volume"]
+        )
+    )
+
     cal_turnovers = []
     total_outstanding_shares = 0
+
     for i in df.index:
         if df.at[i, "Is_Quote"]:
             cal_turnovers.append(np.nan)
             continue
-        df.at[i, "Participant_Timestamp_f"]
+        cal_turnovers.append(calVolumeAll[i])
         start_date = df.at[i, "Date"]
         end_date = df.at[i, "Date"]
         symbol = df.at[i, "Symbol"]
-        s = getOutStandingNumberOfShares([symbol], start_date, end_date)
+        s = getOutStandingNumberOfShares(symbol, start_date, end_date, ref_data)
         total_outstanding_shares = total_outstanding_shares + s
-        # Need correct way of indexing
-        # cal_turnovers.append(calVolumeAll[i] / s)
-
     # S is the shares outstanding
     # return cal_turnovers or cal_volumeall/total_outstanding_shares
     return calVolumeAll / total_outstanding_shares
