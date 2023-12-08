@@ -18,6 +18,13 @@ Instructions for access through the SQL UI DBeaver are  included in Accessing th
     db_pass=
 ```
 
+### Spark Pipelines
+- For feature generation, transformation, and normalization
+
+
+### PyTorch Models
+- For training and testing models
+
 ### Conda Tips
 - `environment.yml` is a file that contains all the dependencies for the conda environment
     - Will have to update path name on this yml file
