@@ -9,3 +9,4 @@ Supported Models
 ----------------
 - L1-Trend Filtering [https://huggingface.co/taqdatabase/l1_trend_filtering](https://huggingface.co/taqdatabase/l1_trend_filtering)
 - L1-Trend Filtering with Hyperparameter Optimization
+
