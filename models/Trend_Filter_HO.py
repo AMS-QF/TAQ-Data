@@ -1,4 +1,4 @@
-"""L1-Trend Filter Model in PyTorch"""
+"""L1-Trend Filter Model in PyTorch with Hyperparameter Optimization"""
 import torch as th
 from typing import Union
 
