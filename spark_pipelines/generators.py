@@ -5,13 +5,8 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 from sortedcollections import OrderedSet
-<<<<<<< HEAD:pipelines/generators.py
 
 sys.path.insert(1, "../testData")
-=======
-import sys
-sys.path.insert(1, '../testData')
->>>>>>> master:spark_pipelines/generators.py
 
 
 def convertParticipantTimestamp(pts, date):
