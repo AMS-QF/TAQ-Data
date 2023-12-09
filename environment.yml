@@ -13,6 +13,7 @@ dependencies:
   -  certifi
   -  charset-normalizer
   -  exchange-calendars
+  -  huggingface_hub 
   -  idna
   -  intel-openmp
   -  ipykernel
