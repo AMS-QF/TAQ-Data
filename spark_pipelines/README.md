@@ -1,4 +1,4 @@
- ### Pipeline for TAQ Features
+ ### Spark Pipeline for TAQ Features
 
 This directory contains the pipeline for generating the TAQ features. The pipeline is composed of the following steps:
 - Cleaning the data, which is within the 'clean_data.py' file.
