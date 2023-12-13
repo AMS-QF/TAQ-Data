@@ -1,4 +1,4 @@
-from generators import convertParticipantTimestamp
+from .generators import convertParticipantTimestamp
 from sklearn.base import BaseEstimator, TransformerMixin
 
 

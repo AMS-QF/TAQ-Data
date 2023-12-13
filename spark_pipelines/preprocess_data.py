@@ -1,4 +1,4 @@
-from generators import generate_mox_identifier, generate_trade_side
+from .generators import generate_mox_identifier, generate_trade_side
 from sklearn.base import BaseEstimator, TransformerMixin
 
 

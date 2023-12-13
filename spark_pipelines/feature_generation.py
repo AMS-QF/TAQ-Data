@@ -1,4 +1,4 @@
-from generators import generate_transaction_return, np, parent_generator_ret_imb
+from .generators import generate_transaction_return, np, parent_generator_ret_imb
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
