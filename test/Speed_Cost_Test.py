@@ -1,4 +1,4 @@
-from pipelines import generators
+from spark_pipelines import generators
 import unittest
 import pandas as pd
 import math
