@@ -18,6 +18,7 @@ dependencies:
   -  idna
   -  intel-openmp
   -  ipykernel
+  -  ipywidgets
   -  joblib
   -  korean_lunar_calendar
   -  libffi
