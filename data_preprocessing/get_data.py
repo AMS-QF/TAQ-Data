@@ -27,7 +27,7 @@ def get_trades(symbols, start_date, end_date, row_limit,columns):
         for symbol in symbols:
             # Execute a command to change directory and list files
             command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd ../TAQNYSE-Clickhouse && cd server_helpers && \
-            python3 trade_server_helpers.py "{server_user}" "{db_user}" "{db_pass}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}","{columns}"'
+            python3 trade_server_helpers.py "{server_user}" "{db_user}" "{db_pass}" "{symbol}" "{start_date}" "{end_date}" "{row_limit}" "{columns}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
             print(f"Output for symbol {symbol}:")
@@ -80,7 +80,7 @@ def get_quotes(symbols, start_date, end_date, row_limit,columns):
         for symbol in symbols:
             # Execute a command to change directory and list files
             command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd ../TAQNYSE-Clickhouse && cd server_helpers && \
-                python3 quote_server_helpers.py "{server_user}" "{db_user}" "{db_pass}"  "{symbol}" "{start_date}" "{end_date}" "{row_limit}", "{columns}"'
+                python3 quote_server_helpers.py "{server_user}" "{db_user}" "{db_pass}"  "{symbol}" "{start_date}" "{end_date}" "{row_limit}" "{columns}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
             print(f"Output for symbol {symbol}:")
@@ -132,7 +132,7 @@ def get_ref(symbols, start_date, end_date, row_limit,columns):
         for symbol in symbols:
             # Execute a command to change directory and list files
             command = f'source /opt/anaconda3/etc/profile.d/conda.sh && conda activate query_user && cd ../TAQNYSE-Clickhouse && cd server_helpers && \
-                python3 refdata_server_helpers.py "{server_user}" "{db_user}" "{db_pass}"  "{symbol}" "{start_date}" "{end_date}" "{row_limit}", "{columns}"'
+                python3 refdata_server_helpers.py "{server_user}" "{db_user}" "{db_pass}"  "{symbol}" "{start_date}" "{end_date}" "{row_limit}" "{columns}"'
             stdin, stdout, stderr = ssh.exec_command(command)
 
             print(f"Output for symbol {symbol}:")
