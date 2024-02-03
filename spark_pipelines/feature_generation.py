@@ -16,6 +16,9 @@ class FeatureGeneration(BaseEstimator, TransformerMixin):
     def transform(self, df):
         # 1.generating response variable
 
+        assert "return_span" in self.params.keys(), "return_span is not in params"
+        assert "clock_mode" in self.params.keys(), "clock_mode is not in params"
+
         # transaction return
         df["Trans_Return"] = generate_transaction_return(df, self.params["return_span"], self.params["clock_mode"])
 
