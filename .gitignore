@@ -1,11 +1,19 @@
-.ipynb_checkpoints/
+# files to ignore
+
+# data
 data/
 data_preprocessing/__pycache__
+
+# system
 .env
+.ipynb_checkpoints/
+.DS_Store
+
+# python
 feature_generation/__pycache__/
 spark_pipelines/__pycache__
+
+# models
+models/lightning_logs
 personal_research/
 HFT_Research/
-.DS_Store
-spark_local
-testData

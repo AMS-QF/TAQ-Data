@@ -44,6 +44,7 @@ dependencies:
   -  python_abi
   -  python-dotenv
   -  pytorch
+  -  pytorch-lightning
   -  pytz
   -  requests
   -  setuptools
@@ -74,4 +75,5 @@ dependencies:
     - numpy
     - pandas
     - pyarrow
+    - torchsummary
 prefix: /home/jbohne/anaconda3/envs
