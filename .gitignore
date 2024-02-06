@@ -6,13 +6,13 @@ data_preprocessing/__pycache__
 
 # system
 .env
-.env_temp
 .ipynb_checkpoints/
 .DS_Store
 
 # python
 feature_generation/__pycache__/
 spark_pipelines/__pycache__
+**/__pycache__/
 
 # models
 models/lightning_logs
