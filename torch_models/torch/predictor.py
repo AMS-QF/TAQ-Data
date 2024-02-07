@@ -23,6 +23,9 @@ class PyTorchPredictor:
         self,
         dataset: Dataset
     ):
+        """
+        Generate predictions 
+        """
         if isinstance(dataset, PandasDataset):
             test_loader = create_pandas_dataloader(
                 data=dataset,
@@ -38,10 +41,14 @@ class PyTorchPredictor:
         self,
         dataset: Dataset
     ):
-        y_predict = self.predict(dataset)[0]
-        y_true = dataset.y
+        """
+        Backtest using different metrics
+        """
+        y_predict = self.predict(dataset)
+        y_predict_concat = torch.cat(y_predict, dim=0)
+        y_predict_np = y_predict_concat.cpu().detach().numpy()
+        y_test = dataset.y
 
-        y_predict = y_predict.cpu().detach()
-        y_predict = y_predict.numpy()
-        print("Out of sample R2:", out_of_sample_R2(y_true, y_predict))
+        # Add more metrics in future
+        print("Out of sample R2:", out_of_sample_R2(y_test, y_predict_np))
         
