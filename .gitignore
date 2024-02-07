@@ -19,5 +19,9 @@ models/lightning_logs
 personal_research/
 HFT_Research/
 
+# logs
+lightning_logs
+
+
 # test
 test/
