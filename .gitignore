@@ -2,7 +2,7 @@
 
 # data
 data/
-data_preprocessing/__pycache__
+sample_data/
 
 # system
 .env

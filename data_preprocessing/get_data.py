@@ -1,12 +1,11 @@
 import os
-import pandas as pd
 
 import paramiko
 from dotenv import load_dotenv
 from scp import SCPClient
 
 
-def get_trades(datapath, symbols, start_date, end_date, row_limit,columns):
+def get_trades(symbols, start_date, end_date, row_limit,columns):
     # load the contents of the .env file into the environment
     load_dotenv()
 
@@ -44,11 +43,10 @@ def get_trades(datapath, symbols, start_date, end_date, row_limit,columns):
 
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
-            local_file_path = datapath + f'/raw/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv.gz'
+            local_file_path = f'data/trades_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv.gz'
             os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
 
             scp.get(f"trade_results.csv.gz", local_file_path)
-    
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -60,7 +58,7 @@ def get_trades(datapath, symbols, start_date, end_date, row_limit,columns):
         ssh.close()
 
 
-def get_quotes(datapath, symbols, start_date, end_date, row_limit,columns):
+def get_quotes(symbols, start_date, end_date, row_limit,columns):
     # load the contents of the .env file into the environment
     load_dotenv()
 
@@ -98,7 +96,7 @@ def get_quotes(datapath, symbols, start_date, end_date, row_limit,columns):
 
             # fetch the remote file 'trade_results.csv' from the directory 'TAQNYSE-Clickhouse'
             # and save it to the data directory in the pipelines folder
-            local_file_path = datapath + f'/raw/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv.gz'
+            local_file_path = f'data/quotes_{symbol}_{start_date.replace("-", "")}-{end_date.replace("-", "")}.csv.gz'
             os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
             scp.get(f"quote_results.csv.gz", local_file_path)
 
