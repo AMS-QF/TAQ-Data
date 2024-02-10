@@ -8,6 +8,8 @@ data_preprocessing/__pycache__
 .env
 .ipynb_checkpoints/
 .DS_Store
+.vscode/
+__pycache__/
 
 # python
 feature_generation/__pycache__/
