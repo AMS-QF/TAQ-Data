@@ -5,7 +5,6 @@ channels:
 - bioconda
 - anaconda
 - defaults
-- huggingface
 dependencies:
   -  _libgcc_mutex
   -  blas
@@ -13,27 +12,21 @@ dependencies:
   -  ca-certificates
   -  certifi
   -  charset-normalizer
+  -  clickhouse-sqlalchemy
   -  exchange-calendars
-  -  huggingface_hub 
   -  idna
   -  intel-openmp
-  -  ipykernel
-  -  ipywidgets
-  -  joblib
   -  korean_lunar_calendar
   -  libffi
-  -  matplotlib
   -  mkl
   -  mkl_fft
   -  mkl_random
   -  nb_conda_kernels
   -  numpy-base
-  -  numba
   -  openssl
   -  packaging
   -  pandas_market_calendars
   -  pip
-  -  pre_commit
   -  pycparser
   -  pyluach
   -  pyopenssl
@@ -43,20 +36,14 @@ dependencies:
   -  python-dateutil
   -  python_abi
   -  python-dotenv
-  -  pytorch
-  -  pytorch-lightning
   -  pytz
   -  requests
   -  setuptools
   -  scp
   -  six
-  -  sortedcollections
-  -  scikit-learn
   -  sqlite
-  -  statsmodels
   -  tk
   -  toolz
-  -  transformers
   -  tzdata
   -  tzlocal
   -  urllib3
@@ -66,6 +53,7 @@ dependencies:
   - pip:
     - brotlipy
     - cffi
+    - clickhouse-driver
     - configobj
     - cryptography
     - greenlet
@@ -74,6 +62,5 @@ dependencies:
     - mkl-service
     - numpy
     - pandas
-    - pyarrow
-    - torchsummary
+    - sqlalchemy
 prefix: /home/jbohne/anaconda3/envs
