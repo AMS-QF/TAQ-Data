@@ -11,11 +11,5 @@ data_preprocessing/__pycache__
 .vscode/
 __pycache__/
 
-# python
-feature_generation/__pycache__/
-spark_pipelines/__pycache__
-
 # models
-models/lightning_logs
 personal_research/
-HFT_Research/

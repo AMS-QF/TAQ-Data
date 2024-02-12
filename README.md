@@ -1,6 +1,8 @@
 # TAQ-Data
 Included are the client side scripts for access to the TAQ-Clickhouse Database remotely with Python.
 
+Reccomended for advanced users only who are familiar with GitHub, Conda, and Linux
+
 Instructions for access through the SQL UI DBeaver are  included in Accessing the TAQ-Clickhouse Database PDF
 
 ### Local Setup
