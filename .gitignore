@@ -13,3 +13,6 @@ __pycache__/
 
 # models
 personal_research/
+
+# private scripts
+data_preprocessing/data_iterator.py
